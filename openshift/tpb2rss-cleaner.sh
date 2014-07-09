@@ -10,5 +10,7 @@ removefiles() {
 
 for INPUT in $DIR/*; do
 	ITEM=$( basename "`sed -e 's/\[/\\\[/g' -e 's/\!/\\\!/g' <<< "$INPUT"`" )
-	grep -e ^"$ITEM$" "$FILE" || removefiles "$INPUT"
+	if [ "$ITEM" ]; then
+		grep -e ^"$ITEM$" "$FILE" || removefiles "$INPUT"
+	fi
 done
