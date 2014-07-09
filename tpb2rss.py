@@ -68,14 +68,14 @@ def item_constructor(item, seeders, leechers):
 	item_xml += "\n\t\t\t\t<link><![CDATA[ " + item[9] + " ]]></link>"
 	uploaded = item[find_string(item, "Uploaded")]
 	item_xml += "\n\t\t\t\t<pubDate>" + datetime_parser(uploaded.split(" ")[1][:-1]) + " GMT</pubDate>"
-	item_xml += "\n\t\t\t\t<description>Link: https://thepiratebay.org" + str(item[5])
+	item_xml += "\n\t\t\t\t<description><![CDATA[ Link: https://thepiratebay.org" + str(item[5])
 	if find_string(item, "piratebaytorrents"):
-		item_xml += "\nTorrent: " + str(item[find_string(item, "piratebaytorrents")]).replace("//piratebaytorrents", "https://piratebaytorrents")
+		item_xml += "<br>Torrent: " + str(item[find_string(item, "piratebaytorrents")]).replace("//piratebaytorrents", "https://piratebaytorrents")
 	if find_string(item, "Browse "):
-		item_xml += "\nUploader: " + str(item[find_string(item, "Browse ")]).replace("Browse ", "")
-	item_xml += "\nSize: " + uploaded.split(" ")[3][:-1]
-	item_xml += "\nSeeders: " + seeders
-	item_xml += "\nLeechers: " + leechers + "</description>\n\t\t\t</item>"
+		item_xml += "<br>Uploader: " + str(item[find_string(item, "Browse ")]).replace("Browse ", "")
+	item_xml += "<br>Size: " + uploaded.split(" ")[3][:-1]
+	item_xml += "<br>Seeders: " + seeders
+	item_xml += "<br>Leechers: " + leechers + " ]]></description>\n\t\t\t</item>"
 	return item_xml
 
 def main_program(soup):
