@@ -6,7 +6,7 @@ OUTPUTDIR="$OPENSHIFT_DATA_DIR/static"
 
 for n in $( seq `wc -l <  "$FILE"` ); do
 	ITEM=$( head -n$n "$FILE" | tail -n1 )
-	if [ $ITEM ]; then
+	if [ "$ITEM" ]; then
 		TMP="$RANDOM"
 		FILENAME=$( sed 's/%20/ /g' <<< "$ITEM" )
 		wget --quiet -O "$DIR/$TMP" "https://thepiratebay.se/search/$ITEM/0/3/0"
