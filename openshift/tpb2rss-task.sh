@@ -16,14 +16,14 @@ for n in $( seq `wc -l <  "$FILE"` ); do
 			if [ "$( cat "$DIR/$TMP" )" != "$( cat "$DIR/$FILENAME" )" ]; then
 				echo "$FILENAME updated"
 				mv "$DIR/$TMP" "$DIR/$FILENAME"
-				"$OPENSHIFT_DATA_DIR/tpb2rss.py" "$DIR/$FILENAME" "$OUTPUTDIR/$FILENAME.xml"
+				"$OPENSHIFT_REPO_DIR/tpb2rss.py" "$DIR/$FILENAME" "$OUTPUTDIR/$FILENAME.xml"
 			else
 				echo "No updates for $FILENAME"; rm "$DIR/$TMP"
 			fi
 		else
 			echo "$FILENAME created"
 			mv "$DIR/$TMP" "$DIR/$FILENAME"
-			"$OPENSHIFT_DATA_DIR/tpb2rss.py" "$DIR/$FILENAME" "$OUTPUTDIR/$FILENAME.xml"
+			"$OPENSHIFT_REPO_DIR/tpb2rss.py" "$DIR/$FILENAME" "$OUTPUTDIR/$FILENAME.xml"
 		fi
 	fi
 done
