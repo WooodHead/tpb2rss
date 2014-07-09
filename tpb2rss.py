@@ -117,7 +117,7 @@ def xml_constructor(soup):
 	xml += "\n\t</channel>" + "\n</rss>"
 	return xml
 
-def main_program(search_string):
+def xml_from_url(search_string):
 	open_url(search_string)
 	return xml_constructor(soup)
 
