@@ -98,9 +98,9 @@ if (len(sys.argv) == 2) or (len(sys.argv) == 3):
 	except:
 		open_url(sys.argv[1])
 	xml = main_program(soup)
-	try:
+	if len(sys.argv) >= 3:
 		write_file(sys.argv[2], xml)
-	except:
+	else:
 		print xml
 else:
 	print "Usage:", sys.argv[0], "( INPUT_FILE | SEARCH_TERM ) [ OUTPUT_FILE ]"
