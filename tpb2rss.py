@@ -5,11 +5,30 @@ import sys
 import datetime
 import urllib2
 
+def url_parser(search_string):
+	url = filter(None, search_string.split("/"))
+	if (( url [0] == "http:" ) or ( url[0] == "https:" )) and ( url[1].startswith("thepiratebay") and ( len(url) >= 4 ) ):
+		return [url[2], url[3]]
+	elif (( url[0] == "search" ) or ( url[0] == "user" ) or ( url[0] == "browse" )) and ( len(url) > 1 ):
+		return [url[0], url[1]]
+	elif ( len(url) == 1 ) and ( not search_string.startswith("/") ):
+		return ["search", search_string]
+	return None
+
 def open_url(search_string):
-	global soup
-	url = "https://thepiratebay.se/search/" + search_string + "/0/3/0"
-	page = urllib2.urlopen(url)
-	soup = BeautifulSoup(page.read())
+	global soup, info, link
+	info = url_parser(search_string)
+	if info:
+		link = "http://thepiratebay.se/" + info[0] + "/" + info[1] + "/0/3/0"
+		try:
+			page = urllib2.urlopen(link)
+		except:
+			print "Couldn't open the URL"
+			exit(1)
+		soup = BeautifulSoup(page.read())
+	else:
+		print "The given string is invalid:", search_string
+		exit(1)
 
 def open_file(input_file):
 	global soup
@@ -24,7 +43,7 @@ def write_file(output_file, content):
 		file.close()
 	except:
 		print "Couldn't write file:", output_file
-		exit()
+		exit(1)
 
 def datetime_parser(raw_datetime):
 	if "mins" in raw_datetime:
@@ -79,8 +98,12 @@ def item_constructor(item, seeders, leechers):
 	return item_xml
 
 def main_program(soup):
-	title = str(soup.span.contents[0]).split(": ")[1]
-	xml = "<rss version=\"2.0\">\n\t<channel>\n\t\t<title>TPB2RSS: " + title + "</title>\n" + "\t\t<link>http://thepiratebay.org/search/" + title.replace(" ", "%20") + "/0/3/0</link>\n\t\t<description>The Pirate Bay search feed for \"" + title + "\"</description>\n" + "\t\t<lastBuildDate>" + str(datetime.datetime.utcnow().strftime("%a, %d %b %Y %H:%M:%S")) + " GMT</lastBuildDate>\n\t\t<language>en-us</language>\n\t\t<generator>TPB2RSS 1.0</generator>\n\t\t<docs>http://github.com/camporez/tpb2rss</docs>\n\t\t<webMaster>ian@camporez.com</webMaster>"
+	page_type = info[0]
+	if page_type == "search":
+		title = str(soup.span.contents[0]).split(": ")[1]
+	elif ( page_type == "user" ) or ( page_type == "browse" ):
+		title = str(" ".join((soup.span.contents[0].split(" "))[1:]))
+	xml = "<rss version=\"2.0\">\n\t<channel>\n\t\t<title>TPB2RSS: " + title + "</title>\n" + "\t\t<link>" + link + "</link>\n\t\t<description>The Pirate Bay " + page_type + " feed for \"" + title + "\"</description>\n" + "\t\t<lastBuildDate>" + str(datetime.datetime.utcnow().strftime("%a, %d %b %Y %H:%M:%S")) + " GMT</lastBuildDate>\n\t\t<language>en-us</language>\n\t\t<generator>TPB2RSS 1.0</generator>\n\t\t<docs>http://github.com/camporez/tpb2rss</docs>\n\t\t<webMaster>ian@camporez.com</webMaster>"
 	tables = soup("td")
 	position = 0
 	for i in range(len(tables) / 4):
@@ -103,4 +126,4 @@ if (len(sys.argv) == 2) or (len(sys.argv) == 3):
 	else:
 		print xml
 else:
-	print "Usage:", sys.argv[0], "( INPUT_FILE | SEARCH_TERM ) [ OUTPUT_FILE ]"
+	print "Usage:", sys.argv[0], "( INPUT_FILE | TPB_URL | SEARCH_TERM ) [ OUTPUT_FILE ]"
