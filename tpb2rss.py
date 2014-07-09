@@ -101,8 +101,10 @@ def xml_constructor(soup):
 	page_type = info[0]
 	if page_type == "search":
 		title = str(soup.span.contents[0]).split(": ")[1]
-	elif ( page_type == "user" ) or ( page_type == "browse" ):
+	elif ( page_type == "browse" ):
 		title = str(" ".join((soup.span.contents[0].split(" "))[1:]))
+	elif ( page_type == "user" ):
+		title = info[1]
 	xml = "<rss version=\"2.0\">\n\t<channel>\n\t\t<title>TPB2RSS: " + title + "</title>\n" + "\t\t<link>" + link + "</link>\n\t\t<description>The Pirate Bay " + page_type + " feed for \"" + title + "\"</description>\n" + "\t\t<lastBuildDate>" + str(datetime.datetime.utcnow().strftime("%a, %d %b %Y %H:%M:%S")) + " GMT</lastBuildDate>\n\t\t<language>en-us</language>\n\t\t<generator>TPB2RSS 1.0</generator>\n\t\t<docs>http://github.com/camporez/tpb2rss</docs>\n\t\t<webMaster>ian@camporez.com</webMaster>"
 	tables = soup("td")
 	position = 0
