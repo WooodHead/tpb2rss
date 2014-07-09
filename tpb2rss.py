@@ -97,7 +97,7 @@ def item_constructor(item, seeders, leechers):
 	item_xml += "<br>Leechers: " + leechers + " ]]></description>\n\t\t\t</item>"
 	return item_xml
 
-def main_program(soup):
+def xml_constructor(soup):
 	page_type = info[0]
 	if page_type == "search":
 		title = str(soup.span.contents[0]).split(": ")[1]
@@ -120,7 +120,7 @@ if (len(sys.argv) == 2) or (len(sys.argv) == 3):
 		open_file(sys.argv[1])
 	except:
 		open_url(sys.argv[1])
-	xml = main_program(soup)
+	xml = xml_constructor(soup)
 	if len(sys.argv) >= 3:
 		write_file(sys.argv[2], xml)
 	else:
