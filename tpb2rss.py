@@ -115,6 +115,10 @@ def xml_constructor(soup):
 	xml += "\n\t</channel>" + "\n</rss>"
 	return xml
 
+def main_program(search_string):
+	open_url(search_string)
+	return xml_constructor(soup)
+
 if (len(sys.argv) == 2) or (len(sys.argv) == 3):
 	try:
 		open_file(sys.argv[1])
@@ -126,4 +130,4 @@ if (len(sys.argv) == 2) or (len(sys.argv) == 3):
 	else:
 		print xml
 else:
-	print "Usage:", sys.argv[0], "( INPUT_FILE | TPB_URL | SEARCH_TERM ) [ OUTPUT_FILE ]"
+	print "Usage:", sys.argv[0], "( INPUT_FILE | TPB_URL | SEARCH_TERM ) [ OUTPUT_FILE ] )"
