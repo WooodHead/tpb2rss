@@ -17,4 +17,4 @@ License
 Installing on OpenShift
 -----------------------
 
-Read my installation guide [here](http://camporez.com/blog/tbp2rss-openshift)
+Read my installation guide [here](http://camporez.com/blog/tpb2rss-openshift)
