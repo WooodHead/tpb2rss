@@ -13,12 +13,9 @@ def open_url(search_string):
 
 def open_file(input_file):
 	global soup
-	try:
-		file = open(input_file)
-		soup = BeautifulSoup(file.read())
-		file.close()
-	except:
-		open_url(input_file)
+	file = open(input_file)
+	soup = BeautifulSoup(file.read())
+	file.close()
 
 def write_file(output_file, content):
 	try:
@@ -87,17 +84,23 @@ def main_program(soup):
 	tables = soup("td")
 	position = 0
 	for i in range(len(tables) / 4):
-		xml += item_constructor(str(tables[position + 1]).split("\""), str(str(tables[position + 2]).split(">")[1]).split("<")[0], str(str(tables[position + 3]).split(">")[1]).split("<")[0])
+		item = str(tables[position + 1]).split("\"")
+		seeders = str(str(tables[position + 2]).split(">")[1]).split("<")[0]
+		leechers = str(str(tables[position + 3]).split(">")[1]).split("<")[0]
+		xml += item_constructor(item, seeders, leechers)
 		position += 4
 	xml += "\n\t</channel>" + "\n</rss>"
 	return xml
 
-if len(sys.argv) == 2:
-	open_file(sys.argv[1])
-	print main_program(soup)
-elif len(sys.argv) == 3:
-	open_file(sys.argv[1])
+if (len(sys.argv) == 2) or (len(sys.argv) == 3):
+	try:
+		open_file(sys.argv[1])
+	except:
+		open_url(sys.argv[1])
 	xml = main_program(soup)
-	write_file(sys.argv[2], xml)
+	try:
+		write_file(sys.argv[2], xml)
+	except:
+		print xml
 else:
 	print "Usage:", sys.argv[0], "( INPUT_FILE | SEARCH_TERM ) [ OUTPUT_FILE ]"
