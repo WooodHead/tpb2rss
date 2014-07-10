@@ -1,0 +1,222 @@
+#!/usr/bin/python2
+# -*- coding: cp1252 -*-
+from bs4 import BeautifulSoup
+import os
+import datetime
+import urllib2
+import tpb2rss
+
+virtenv = os.environ['OPENSHIFT_PYTHON_DIR'] + '/virtenv/'
+virtualenv = os.path.join(virtenv, 'bin/activate_this.py')
+try:
+	execfile(virtualenv, dict(__file__=virtualenv))
+except IOError:
+	pass
+
+def feed_generator(path_info):
+	try:
+		xml = tpb2rss.xml_from_url(path_info)
+		return xml
+	except:
+		return None
+
+def main_body_generator(xml):
+	html = "<!DOCTYPE html><html lang='en'><head>\t<meta charset='utf-8' />\t<title>TPB2RSS - A RSS feed generator for ThePirateBay</title>"	
+	html += "\n\t<style type='text/css'>"
+	html += "\n\t\tbody {"
+	html += "\n\t\t\tbackground: #4E818D; "
+	html += "\n\t\t\tcolor: #fff;"
+	html += "\n\t\t\tfont: 16px sans-serif;"
+	html += "\n\t\t}\n"
+	html += "\n\t\t#container {"
+	html += "\n\t\t\theight: 350px;"
+	html += "\n\t\t\twidth: 900px;"
+	html += "\n\t\t\ttop: 50%;"
+	html += "\n\t\t\tleft: 50%;"
+	html += "\n\t\t\tmargin-top: -175px;"
+	html += "\n\t\t\tmargin-left: -450px;"
+	html += "\n\t\t\tposition: absolute;"
+	html += "\n\t\t}\n"
+	html += "\n\t\theader {"
+	html += "\n\t\t\twidth: 100%;"
+	html += "\n\t\t\tmargin:0px auto;"
+	html += "\n\t\t}\n"
+	html += "\n\t\th1 {"
+	html += "\n\t\t\ttext-align: center;"
+	html += "\n\t\t\tcolor: #fff;"
+	html += "\n\t\t\tline-height: 95px;"
+	html += "\n\t\t\tfont-size: 95px;"
+	html += "\n\t\t\tfont-family: 'Impact', sans-serif;"
+	html += "\n\t\t\tfont-weight: bolder;"
+	html += "\n\t\t\ttext-shadow: #253e45 -1px 1px 0,"
+	html += "\n\t\t\t#253e45 -2px 2px 0,"
+	html += "\n\t\t\t#d45848 -3px 3px 0,"
+	html += "\n\t\t\t#d45848 -4px 4px 0;"
+	html += "\n\t\t\tmargin: 50px 0 0 0;"
+	html += "\n\t\t\tdisplay: block;"
+	html += "\n\t\t}\n"
+	html += "\n\t\t.github-fork-ribbon {"
+	html += "\n\t\t\tposition: absolute;"
+	html += "\n\t\t\tpadding: 2px 0;"
+	html += "\n\t\t\tbackground-color: #385D66;"
+	html += "\n\t\t\tbackground-image: -webkit-gradient(linear, left top, left bottom, from(rgba(0, 0, 0, 0)), to(rgba(0, 0, 0, 0.15)));"
+	html += "\n\t\t\tbackground-image: -webkit-linear-gradient(top, rgba(0, 0, 0, 0), rgba(0, 0, 0, 0.15));"
+	html += "\n\t\t\tbackground-image: -moz-linear-gradient(top, rgba(0, 0, 0, 0), rgba(0, 0, 0, 0.15));"
+	html += "\n\t\t\tbackground-image: -ms-linear-gradient(top, rgba(0, 0, 0, 0), rgba(0, 0, 0, 0.15));"
+	html += "\n\t\t\tbackground-image: -o-linear-gradient(top, rgba(0, 0, 0, 0), rgba(0, 0, 0, 0.15));"
+	html += "\n\t\t\tbackground-image: linear-gradient(to bottom, rgba(0, 0, 0, 0), rgba(0, 0, 0, 0.15));"
+	html += "\n\t\t\t-webkit-box-shadow: 0 2px 3px 0 rgba(0, 0, 0, 0.5);"
+	html += "\n\t\t\t-moz-box-shadow: 0 2px 3px 0 rgba(0, 0, 0, 0.5);"
+	html += "\n\t\t\tbox-shadow: 0 2px 3px 0 rgba(0, 0, 0, 0.5);"
+	html += "\n\t\t\tfont: 700 13px 'Helvetica Neue', Helvetica, Arial, sans-serif;"
+	html += "\n\t\t\tz-index: 9999;"
+	html += "\n\t\t\tpointer-events: auto;"
+	html += "\n\t\t}\n"
+	html += "\n\t\t.github-fork-ribbon a, .github-fork-ribbon a:hover {"
+	html += "\n\t\t\tcolor: #fff;"
+	html += "\n\t\t\ttext-decoration: none;"
+	html += "\n\t\t\ttext-shadow: 0 -1px rgba(0, 0, 0, 0.5);"
+	html += "\n\t\t\ttext-align: center;"
+	html += "\n\t\t\twidth: 200px;"
+	html += "\n\t\t\tline-height: 20px;"
+	html += "\n\t\t\tdisplay: inline-block;"
+	html += "\n\t\t\tpadding: 2px 0;"
+	html += "\n\t\t\tborder-width: 1px 0;"
+	html += "\n\t\t\tborder-style: dotted;"
+	html += "\n\t\t\tborder-color: #fff;"
+	html += "\n\t\t\tborder-color: rgba(255, 255, 255, 0.7);"
+	html += "\n\t\t}\n"
+	html += "\n\t\t.github-fork-ribbon-wrapper {"
+	html += "\n\t\t\twidth: 150px;"
+	html += "\n\t\t\theight: 150px;"
+	html += "\n\t\t\tposition: absolute;"
+	html += "\n\t\t\toverflow: hidden;"
+	html += "\n\t\t\ttop: 0;"
+	html += "\n\t\t\tz-index: 9999;"
+	html += "\n\t\t\tpointer-events: none;"
+	html += "\n\t\t}\n"
+	html += "\n\t\t.github-fork-ribbon-wrapper.fixed {"
+	html += "\n\t\t\tposition: fixed;"
+	html += "\n\t\t}\n"
+	html += "\n\t\t.github-fork-ribbon-wrapper.left {"
+	html += "\n\t\t\tleft: 0;"
+	html += "\n\t\t}\n"
+	html += "\n\t\t.github-fork-ribbon-wrapper.right {"
+	html += "\n\t\t\tright: 0;"
+	html += "\n\t\t}\n"
+	html += "\n\t\t.github-fork-ribbon-wrapper.right .github-fork-ribbon {"
+	html += "\n\t\t\ttop: 42px;"
+	html += "\n\t\t\tright: -43px;"
+	html += "\n\t\t\t-webkit-transform: rotate(45deg);"
+	html += "\n\t\t\t-moz-transform: rotate(45deg);"
+	html += "\n\t\t\t-ms-transform: rotate(45deg);"
+	html += "\n\t\t\t-o-transform: rotate(45deg);"
+	html += "\n\t\t\ttransform: rotate(45deg);"
+	html += "\n\t\t}\n"
+	html += "\n\t\t#search-box {"
+	html += "\n\t\t\ttext-align: center;"
+	html += "\n\t\t\twidth: 500px;"
+	html += "\n\t\t\tleft: 50%;"
+	html += "\n\t\t\tmargin-top: 50px;"
+	html += "\n\t\t\tmargin-left: -250px;"
+	html += "\n\t\t\tposition: absolute;"
+	html += "\n\t\t}\n"
+	html += "\n\t\t#search-form {"
+	html += "\n\t\t\theight: 40px;"
+	html += "\n\t\t\tborder: 1px solid #999;"
+	html += "\n\t\t\t-webkit-border-radius: 5px;"
+	html += "\n\t\t\t-moz-border-radius: 5px;"
+	html += "\n\t\t\tborder-radius: 5px;"
+	html += "\n\t\t\tbackground-color: #fff;"
+	html += "\n\t\t}"
+	html += "\n\t\t#search-text {"
+	html += "\n\t\t\tfont-size: 14px;"
+	html += "\n\t\t\tcolor: #ddd;"
+	html += "\n\t\t\tborder-width: 0;"
+	html += "\n\t\t\tbackground: transparent;"
+	html += "\n\t\t}\n"
+	html += "\n\t\t#search-box input[type='text'] {"
+	html += "\n\t\t\twidth: 380px;"
+	html += "\n\t\t\tmargin-left: -100px;"
+	html += "\n\t\t\tmargin-top: 0px;"
+	html += "\n\t\t\tpadding: 11px 0 12px 1em;"
+	html += "\n\t\t\tcolor: #333;"
+	html += "\n\t\t\toutline: none;"
+	html += "\n\t\t}\n"
+	html += "\n\t\t#search-button {"
+	html += "\n\t\t\tposition: absolute;"
+	html += "\n\t\t\ttop: 0;"
+	html += "\n\t\t\tright: 0;"
+	html += "\n\t\t\theight: 42px;"
+	html += "\n\t\t\twidth: 100px;"
+	html += "\n\t\t\tfont-size: 14px;"
+	html += "\n\t\t\tcolor: #fff;"
+	html += "\n\t\t\ttext-transform: uppercase;"
+	html += "\n\t\t\ttext-align: center;"
+	html += "\n\t\t\tline-height: 42px;"
+	html += "\n\t\t\tborder-width: 0;"
+	html += "\n\t\t\tbackground-color: #d45848;"
+	html += "\n\t\t\t-webkit-border-radius: 0px 5px 5px 0px;"
+	html += "\n\t\t\t-moz-border-radius: 0px 5px 5px 0px;"
+	html += "\n\t\t\tborder-radius: 0px 5px 5px 0px;"
+	html += "\n\t\t\tcursor: pointer;"
+	html += "\n\t\t}"
+	if xml == None:
+		html += "\n\n"
+		html += "\n\t\t#message {"
+		html += "\n\t\t\twidth: 260px;"
+		html += "\n\t\t\tpadding: 8px 8px;"
+		html += "\n\t\t\tcolor: #b94a48;"
+		html += "\n\t\t\tbackground-color: #f2dede;"
+		html += "\n\t\t\tborder-color: #eed3d7;"
+		html += "\n\t\t\ttext-shadow: 0 1px 0 rgba(255, 255, 255, 0.5);"
+		html += "\n\t\t\tborder: 1px solid #fbeed5;"
+		html += "\n\t\t\t-webkit-border-radius: 4px;"
+		html += "\n\t\t\t-moz-border-radius: 4px;"
+		html += "\n\t\t\tborder-radius: 4px;"
+		html += "\n\t\t\tposition: relative;"
+		html += "\n\t\t\tdisplay: block;"
+		html += "\n\t\t}"
+	html += "\n\t</style>"
+	html += "\n\t<!--[if IE]><script src='http://html5shiv.googlecode.com/svn/trunk/html5.js'></script><![endif]-->"
+	html += "\n</head>"
+	html += "\n<body>"
+	html += "\n\t<div class='github-fork-ribbon-wrapper right'>"
+	html += "\n\t\t<div class='github-fork-ribbon'>"
+	html += "\n\t\t\t<a href='https://github.com/camporez/tpb2rss' target='_blank'>Fork me on GitHub</a>"
+	html += "\n\t\t</div>"
+	html += "\n\t</div>"
+	html += "\n\t<div id='container'>"
+	html += "\n\t\t<header>"
+	html += "\n\t\t\t<h1>TPB2RSS</h1>"
+	html += "\n\t\t</header>"
+	html += "\n\t\t<div id='search-box'>"
+	html += "\n\t\t\t<form id='search-form' onsubmit='var input = document.getElementById(\"search-text\").value; var input = input.replace(/^((http)s{0,1}:\/\/(www.){0,1}){0,1}thepiratebay\.[a-z]{1,}\//gi, \"\"); if ((input.substring(0, 7) != \"search/\") && (input.substring(0, 7) != \"browse/\") && (input.substring(0, 5) != \"user/\") ) { var input = \"search/\" + input }; location.href=\"/\" + input; return false;'>"
+	html += "\n\t\t\t\t<input id='search-text' type='text' placeholder='Type a search term or paste a TPB link in here' autofocus required />"
+	html += "\n\t\t\t\t<input id='search-button' type='submit' value='Generate' />"
+	html += "\n\t\t\t</form>"
+	html += "\n\t\t</div>"
+	html += "\n\t</div>"
+	if xml == None:
+		html += "\n\t<div id='message'>Error while processing your search.</div>"
+	html += "\n</body>"
+	html += "\n</html>"
+	return html
+
+def application(environ, start_response):
+	if (( environ['PATH_INFO'] == "") or ( environ['PATH_INFO'] == "/" )):
+		xml = False
+	else:
+		xml = feed_generator(environ['PATH_INFO'])
+	if xml:
+		ctype = 'text/xml'
+		response_body = xml
+	else:
+		ctype = 'text/html'
+		response_body = main_body_generator(xml)
+
+	status = "200 OK"
+	response_headers = [('Content-Type', ctype), ('Content-Length', str(len(response_body)))]
+
+	start_response(status, response_headers)
+	return [response_body]
