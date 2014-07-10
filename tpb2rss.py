@@ -7,12 +7,12 @@ import urllib2
 
 def url_parser(search_string):
 	url = filter(None, search_string.split("/"))
-	if (( url [0] == "http:" ) or ( url[0] == "https:" )) and ( url[1].startswith("thepiratebay") and ( len(url) >= 4 ) ):
-		return [url[2], url[3]]
+	if (( url[0] == "http:" ) or ( url[0] == "https:" )) and ( url[1].startswith("thepiratebay") and ( len(url) >= 4 ) ):
+		return [url[2], url[3].decode('iso-8859-1').encode('utf8')]
 	elif (( url[0] == "search" ) or ( url[0] == "user" ) or ( url[0] == "browse" )) and ( len(url) > 1 ):
-		return [url[0], url[1]]
+		return [url[0], url[1].decode('iso-8859-1').encode('utf8')]
 	elif ( len(url) == 1 ) and ( not search_string.startswith("/") ):
-		return ["search", search_string]
+		return ["search", search_string.decode('iso-8859-1').encode('utf8')]
 	return None
 
 def open_url(search_string):
@@ -97,17 +97,17 @@ def item_constructor(item, seeders, leechers):
 	item_xml += "<br>Size: " + uploaded.split(" ")[3][:-1]
 	item_xml += "<br>Seeders: " + seeders
 	item_xml += "<br>Leechers: " + leechers + "]]></description>"
-	item_xml += "\n\t\t\t<guid>" + link + "</guid>"
+	item_xml += "\n\t\t\t<guid>https://thepiratebay.se" + link + "</guid>"
 	item_xml += "\n\t\t\t<torrent xmlns=\"http://xmlns.ezrss.it/0.1/\">"
 	item_xml += "\n\t\t\t\t<infoHash>" + info_hash + "</infoHash>"
 	item_xml += "\n\t\t\t\t<magnetURI><![CDATA[" + item[9] + "]]></magnetURI>"
-	item_xml += "\n\t\t</torrent>\n\t\t</item>"
+	item_xml += "\n\t\t\t</torrent>\n\t\t</item>"
 	return item_xml
 
 def xml_constructor(soup):
 	page_type = info[0]
 	if page_type == "search":
-		title = str(soup.span.contents[0]).split(": ")[1]
+		title = info[1].replace("%20", " ")
 	elif ( page_type == "browse" ):
 		title = str(" ".join((soup.span.contents[0].split(" "))[1:]))
 	elif ( page_type == "user" ):
@@ -126,7 +126,8 @@ def xml_constructor(soup):
 
 def xml_from_url(search_string):
 	open_url(search_string)
-	return xml_constructor(soup)
+	xml = xml_constructor(soup)
+	return xml
 
 if (len(sys.argv) == 2) or (len(sys.argv) == 3):
 	try:
@@ -138,5 +139,3 @@ if (len(sys.argv) == 2) or (len(sys.argv) == 3):
 		write_file(sys.argv[2], xml)
 	else:
 		print xml
-else:
-	print "Usage:", sys.argv[0], "( INPUT_FILE | TPB_URL | SEARCH_TERM ) [ OUTPUT_FILE ]"
