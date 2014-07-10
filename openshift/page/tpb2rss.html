@@ -188,19 +188,19 @@
 	<!--[if IE]><script src="http://html5shiv.googlecode.com/svn/trunk/html5.js"></script><![endif]-->
 	<script>
 	function changetext(){
-		var url = window.location.protocol + "//" + window.location.host + "/";
-		var input = document.getElementById("search-text").value;
-		var input = input.replace(/^((http)s{0,1}:\/\/(www.){0,1}){0,1}thepiratebay\.[a-z]{1,}\//gi, "");
-		if ((input.substring(0, 7) != "search/") && (input.substring(0, 7) != "browse/") && (input.substring(0, 5) != "user/") ) {
-			var input = "search/" + input
-		};
-		if (input.substring(7, url.length + 7) != url) {
-			document.getElementById("search-text").value = url + input;
-		};
 		if (document.getElementById("search-button").innerHTML == "Open feed"){
 			window.open(document.getElementById("search-text").value, "_blank");
 		} else {
 			document.getElementById("search-button").innerHTML = "Open feed";
+			var url = window.location.protocol + "//" + window.location.host + "/";
+			var input = document.getElementById("search-text").value;
+			var input = input.replace(/^((http)s{0,1}:\/\/(www.){0,1}){0,1}thepiratebay\.[a-z]{1,}\//gi, "");
+			if ((input.substring(0, 7) != "search/") && (input.substring(0, 7) != "browse/") && (input.substring(0, 5) != "user/")) {
+				var input = "search/" + input.replace(/\/|\s/g, "%20");
+			};
+			if (input.substring(7, url.length + 7) != url) {
+				document.getElementById("search-text").value = url + input;
+			};
 		}
 		document.getElementById("search-text").focus();
 		document.getElementById("search-text").select();
