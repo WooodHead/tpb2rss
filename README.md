@@ -7,7 +7,7 @@ Usage
 -----
 
 ```
-./tpb2rss.py ( INPUT_FILE | SEARCH_TERM ) [ OUTPUT_FILE ]
+./tpb2rss.py ( INPUT_FILE | TPB_URL | SEARCH_TERM ) [ OUTPUT_FILE ]
 ```
 
 Installing on OpenShift
