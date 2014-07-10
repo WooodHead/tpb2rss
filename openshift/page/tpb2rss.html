@@ -199,7 +199,9 @@
 		};
 		if (document.getElementById("search-button").innerHTML == "Open feed"){
 			window.open(document.getElementById("search-text").value, "_blank");
-		};
+		} else {
+			document.getElementById("search-button").innerHTML = "Open feed";
+		}
 		document.getElementById("search-text").focus();
 		document.getElementById("search-text").select();
 	}
