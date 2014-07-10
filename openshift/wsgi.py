@@ -20,7 +20,7 @@ def feed_generator(path_info):
 	except:
 		return None
 
-def main_body_generator(xml):
+def main_body_generator(xml, path_info):
 	html = "<!DOCTYPE html>"
 	html += "\n<html lang=\"en\">"
 	html += "\n<head>"
@@ -196,20 +196,20 @@ def main_body_generator(xml):
 	html += "\n\t<!--[if IE]><script src=\"http://html5shiv.googlecode.com/svn/trunk/html5.js\"></script><![endif]-->"
 	html += "\n\t<script>"
 	html += "\n\tfunction changetext(){"
-	html += "\n\t\tvar url = window.location.protocol + \"//\" + window.location.host + \"/\";"
-	html += "\n\t\tvar input = document.getElementById(\"search-text\").value;"
-	html += "\n\t\tvar input = input.replace(/^((http)s{0,1}:\/\/(www.){0,1}){0,1}thepiratebay\.[a-z]{1,}\//gi, \"\");"
-	html += "\n\t\tif ((input.substring(0, 7) != \"search/\") && (input.substring(0, 7) != \"browse/\") && (input.substring(0, 5) != \"user/\") ) {"
-	html += "\n\t\t\tvar input = \"search/\" + input"
-	html += "\n\t\t};"
-	html += "\n\t\tif (input.substring(7, url.length + 7) != url) {"
-	html += "\n\t\t\tdocument.getElementById(\"search-text\").value = url + input;"
-	html += "\n\t\t};"
 	html += "\n\t\tif (document.getElementById(\"search-button\").innerHTML == \"Open feed\"){"
 	html += "\n\t\t\twindow.open(document.getElementById(\"search-text\").value, \"_blank\");"
 	html += "\n\t\t} else {"
 	html += "\n\t\t\tdocument.getElementById(\"search-button\").innerHTML = \"Open feed\";"
-	html += "\n\t\t};"
+	html += "\n\t\t\tvar url = window.location.protocol + \"//\" + window.location.host + \"/\";"
+	html += "\n\t\t\tvar input = document.getElementById(\"search-text\").value;"
+	html += "\n\t\t\tvar input = input.replace(/^((http)s{0,1}:\/\/(www.){0,1}){0,1}thepiratebay\.[a-z]{1,}\//gi, \"\");"
+	html += "\n\t\t\tif ((input.substring(0, 7) != \"search/\") && (input.substring(0, 7) != \"browse/\") && (input.substring(0, 5) != \"user/\")) {"
+	html += "\n\t\t\t\tvar input = \"search/\" + input.replace(/\/|\s/g, \"%20\");"
+	html += "\n\t\t\t};"
+	html += "\n\t\t\tif (input.substring(7, url.length + 7) != url) {"
+	html += "\n\t\t\t\tdocument.getElementById(\"search-text\").value = url + input;"
+	html += "\n\t\t\t};"
+	html += "\n\t\t}"
 	html += "\n\t\tdocument.getElementById(\"search-text\").focus();"
 	html += "\n\t\tdocument.getElementById(\"search-text\").select();"
 	html += "\n\t}"
@@ -243,6 +243,7 @@ def main_body_generator(xml):
 	html += "\n\t</div>"
 	if xml == None:
 		html += "\n\t<div id=\"message\">Error while processing your search</div>"
+		html += "\n\t<!-- " + path_info + " -->"
 	html += "\n</body>"
 	html += "\n</html>"
 	return html
@@ -257,7 +258,7 @@ def application(environ, start_response):
 		response_body = xml
 	else:
 		ctype = 'text/html'
-		response_body = main_body_generator(xml)
+		response_body = main_body_generator(xml, environ['PATH_INFO'])
 
 	status = "200 OK"
 	response_headers = [('Content-Type', ctype), ('Content-Length', str(len(response_body)))]
