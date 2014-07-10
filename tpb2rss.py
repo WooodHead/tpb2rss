@@ -132,4 +132,4 @@ if (len(sys.argv) == 2) or (len(sys.argv) == 3):
 	else:
 		print xml
 else:
-	print "Usage:", sys.argv[0], "( INPUT_FILE | TPB_URL | SEARCH_TERM ) [ OUTPUT_FILE ] )"
+	print "Usage:", sys.argv[0], "( INPUT_FILE | TPB_URL | SEARCH_TERM ) [ OUTPUT_FILE ]"
