@@ -19,7 +19,7 @@ def open_url(search_string):
 	global soup, info, link
 	info = url_parser(search_string)
 	if info:
-		link = "http://thepiratebay.se/" + info[0] + "/" + info[1] + "/0/3/0"
+		link = "http://thepiratebay.se/" + info[0] + "/" + info[1].decode('utf8').encode('iso-8859-1') + "/0/3/0"
 		try:
 			page = urllib2.urlopen(link)
 		except:
@@ -112,6 +112,9 @@ def xml_constructor(soup):
 		title = str(" ".join((soup.span.contents[0].split(" "))[1:]))
 	elif ( page_type == "user" ):
 		title = info[1]
+	
+	title = title.decode('utf8').encode('iso-8859-1')
+	
 	xml = "<rss version=\"2.0\">\n\t<channel>\n\t\t<title>TPB2RSS: " + title + "</title>\n" + "\t\t<link>" + link + "</link>\n\t\t<description>The Pirate Bay " + page_type + " feed for \"" + title + "\"</description>\n" + "\t\t<lastBuildDate>" + str(datetime.datetime.utcnow().strftime("%a, %d %b %Y %H:%M:%S")) + " GMT</lastBuildDate>\n\t\t<language>en-us</language>\n\t\t<generator>TPB2RSS 1.0</generator>\n\t\t<docs>http://github.com/camporez/tpb2rss</docs>\n\t\t<webMaster>ian@camporez.com</webMaster>"
 	tables = soup("td")
 	position = 0
