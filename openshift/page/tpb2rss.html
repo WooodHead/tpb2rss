@@ -1,0 +1,235 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+	<meta charset="utf-8" />
+	<title>TPB2RSS - A RSS feed generator for ThePirateBay</title>
+	<style type="text/css">
+		body {
+			width: 100%;
+			height: 100%;
+			padding: 0 0 0 0;
+			margin: 0 0 0 0;
+			background: #4E818D; 
+			color: #fff;
+			font: 16px sans-serif; 
+			position: absolute;
+		}
+
+		.background {
+			height: 100%;
+			width: 100%;
+			background-image: -ms-radial-gradient(center, ellipse farthest-corner, #85DCF2 0%, #5B97A6 100%);
+			background-image: -moz-radial-gradient(center, ellipse farthest-corner, #85DCF2 0%, #5B97A6 100%);
+			background-image: -o-radial-gradient(center, ellipse farthest-corner, #85DCF2 0%, #5B97A6 100%);
+			background-image: -webkit-gradient(radial, center center, 0, center center, 498, color-stop(0, #85DCF2), color-stop(1, #5B97A6));
+			background-image: -webkit-radial-gradient(center, ellipse farthest-corner, #85DCF2 0%, #5B97A6 100%);
+			background-image: radial-gradient(ellipse farthest-corner at center, #85DCF2 0%, #5B97A6 100%);
+			position: absolute;
+		}
+
+		#container {
+			height: 350px;
+			width: 900px;
+			top: 50%;
+			left: 50%;
+			margin-top: -175px;
+			margin-left: -450px;
+			position: absolute;
+		}
+
+		header {
+			width: 100%;
+			margin:0px auto;
+		}
+
+		h1 {
+			text-align: center;
+			color: #fff;
+			line-height: 95px;
+			font-size: 95px;
+			font-family: "Impact", sans-serif;
+			font-weight: bolder;
+			text-shadow: #253e45 -1px 1px 0,
+			#253e45 -2px 2px 0;
+			margin: 50px 0 0 0;
+			display: block;
+		}
+
+		.github-fork-ribbon {
+			position: absolute;
+			padding: 2px 0;
+			background-color: #BD4E40;
+			background-image: -webkit-gradient(linear, left top, left bottom, from(rgba(0, 0, 0, 0)), to(rgba(0, 0, 0, 0.15)));
+			background-image: -webkit-linear-gradient(top, rgba(0, 0, 0, 0), rgba(0, 0, 0, 0.15));
+			background-image: -moz-linear-gradient(top, rgba(0, 0, 0, 0), rgba(0, 0, 0, 0.15));
+			background-image: -ms-linear-gradient(top, rgba(0, 0, 0, 0), rgba(0, 0, 0, 0.15));
+			background-image: -o-linear-gradient(top, rgba(0, 0, 0, 0), rgba(0, 0, 0, 0.15));
+			background-image: linear-gradient(to bottom, rgba(0, 0, 0, 0), rgba(0, 0, 0, 0.15));
+			-webkit-box-shadow: 0 2px 3px 0 rgba(0, 0, 0, 0.5);
+			-moz-box-shadow: 0 2px 3px 0 rgba(0, 0, 0, 0.5);
+			box-shadow: 0 2px 3px 0 rgba(0, 0, 0, 0.5);
+			font: 700 13px "Helvetica Neue", Helvetica, Arial, sans-serif;
+			z-index: 9999;
+			pointer-events: auto;
+		}
+
+		.github-fork-ribbon a, .github-fork-ribbon a:hover {
+			color: #fff;
+			text-decoration: none;
+			text-shadow: 0 -1px rgba(0, 0, 0, 0.5);
+			text-align: center;
+			width: 200px;
+			line-height: 20px;
+			display: inline-block;
+			padding: 2px 0;
+			border-width: 1px 0;
+			border-style: dotted;
+			border-color: #fff;
+			border-color: rgba(255, 255, 255, 0.7);
+		}
+
+		.github-fork-ribbon-wrapper {
+			width: 150px;
+			height: 150px;
+			position: absolute;
+			overflow: hidden;
+			top: 0;
+			z-index: 9999;
+			pointer-events: none;
+		}
+
+		.github-fork-ribbon-wrapper.fixed {
+			position: fixed;
+		}
+
+		.github-fork-ribbon-wrapper.left {
+			left: 0;
+		}
+
+		.github-fork-ribbon-wrapper.right {
+			right: 0;
+		}
+
+		.github-fork-ribbon-wrapper.right .github-fork-ribbon {
+			top: 42px;
+			right: -43px;
+			-webkit-transform: rotate(45deg);
+			-moz-transform: rotate(45deg);
+			-ms-transform: rotate(45deg);
+			-o-transform: rotate(45deg);
+			transform: rotate(45deg);
+		}
+
+		#search-box {;
+			-webkit-border-radius: 5px;
+			-moz-border-radius: 5px;
+			border-radius: 5px;
+			background-color: #fff;
+			text-align: center;
+			width: 500px;
+			left: 50%;
+			margin-top: 50px;
+			margin-left: -250px;
+			position: absolute;
+		}
+
+		#search-text {
+			font-size: 14px;
+			color: #ddd;
+			border-width: 0;
+			background: transparent;
+		}
+
+		#search-box input[type="text"] {
+			margin-top: 0px;
+			margin-left: -100px;
+			width: 380px;
+			padding: 11px 0 12px 1em;
+			color: #333;
+			outline: none;
+		}
+
+		#search-button {
+			position: absolute;
+			top: 0;
+			right: 0;
+			height: 42px;
+			width: 100px;
+			font-size: 14px;
+			color: #fff;
+			text-transform: uppercase;
+			text-align: center;
+			line-height: 42px;
+			border-width: 0;
+			background-color: #243C42;
+			-webkit-border-radius: 0px 5px 5px 0px;
+			-moz-border-radius: 0px 5px 5px 0px;
+			border-radius: 0px 5px 5px 0px;
+			cursor: pointer;
+		}
+
+		#message {
+			width: 260px;
+			padding: 8px 8px;
+			color: #b94a48;
+			background-color: #f2dede;
+			border-color: #eed3d7;
+			text-shadow: 0 1px 0 rgba(255, 255, 255, 0.5);
+			border: 1px solid #fbeed5;
+			-webkit-border-radius: 4px;
+			-moz-border-radius: 4px;
+			border-radius: 4px;
+			position: relative;
+			display: block;
+		}
+	</style>
+	<!--[if IE]><script src="http://html5shiv.googlecode.com/svn/trunk/html5.js"></script><![endif]-->
+	<script>
+	function changetext(){
+		var url = window.location.protocol + "//" + window.location.host + "/";
+		var input = document.getElementById("search-text").value;
+		var input = input.replace(/^((http)s{0,1}:\/\/(www.){0,1}){0,1}thepiratebay\.[a-z]{1,}\//gi, "");
+		if ((input.substring(0, 7) != "search/") && (input.substring(0, 7) != "browse/") && (input.substring(0, 5) != "user/") ) {
+			var input = "search/" + input
+		};
+		if (input.substring(7, url.length + 7) != url) {
+			document.getElementById("search-text").value = url + input;
+		};
+		if (document.getElementById("search-button").innerHTML == "Open feed"){
+			window.open(document.getElementById("search-text").value, "_blank");
+		};
+		document.getElementById("search-text").focus();
+		document.getElementById("search-text").select();
+	}
+	function checkcontent(){
+		var url = window.location.protocol + "//" + window.location.host + "/";
+		var input = document.getElementById("search-text").value;
+		if ((input.length > url.length) && (input.substring(0, url.length ) == url)) {
+			document.getElementById("search-button").innerHTML = "Open feed";
+		} else {
+			document.getElementById("search-button").innerHTML = "Generate";
+		};
+	}
+	</script>
+</head>
+<body>
+	<div class="background"></div>
+	<div class="github-fork-ribbon-wrapper right">
+		<div class="github-fork-ribbon">
+			<a href="https://github.com/camporez/tpb2rss" target="_blank">Fork me on GitHub</a>
+		</div>
+	</div>
+	<div id="container">
+		<header>
+			<h1>TPB2RSS</h1>
+		</header>
+		<div id="search-box">
+		<form method="post" onsubmit="changetext(); return false;">
+			<input id="search-text" type="text" placeholder="Type a search term or paste a TPB link in here" onkeyup="checkcontent();" autocomplete="off" autofocus required />
+			<button type="submit" id="search-button">Generate</button>
+		</form>
+	</div>
+	<!-- <div id="message">Error while processing your search.</div> -->
+	</div>
+</body>
+</html>
