@@ -8,18 +8,28 @@ import urllib2
 def url_parser(search_string):
 	url = filter(None, search_string.split("/"))
 	if (( url[0] == "http:" ) or ( url[0] == "https:" )) and ( url[1].startswith("thepiratebay") and ( len(url) >= 4 ) ):
-		return [url[2], url[3].decode('iso-8859-1').encode('utf8')]
+		try:
+			filters = url[6]
+		except:
+			filters = "0"
+		return [url[2], url[3].decode('iso-8859-1').encode('utf8'), filters]
 	elif (( url[0] == "search" ) or ( url[0] == "user" ) or ( url[0] == "browse" )) and ( len(url) > 1 ):
-		return [url[0], url[1].decode('iso-8859-1').encode('utf8')]
+		try:
+			filters = url[4]
+		except:
+			filters = "0"
+		return [url[0], url[1].decode('iso-8859-1').encode('utf8'), filters]
 	elif ( len(url) == 1 ) and ( not search_string.startswith("/") ):
-		return ["search", search_string.decode('iso-8859-1').encode('utf8')]
+		return ["search", search_string.decode('iso-8859-1').encode('utf8'), "0"]
 	return None
 
 def open_url(search_string):
 	global soup, info, link
 	info = url_parser(search_string)
 	if info:
-		link = "http://thepiratebay.se/" + info[0] + "/" + info[1].decode('utf8').encode('iso-8859-1') + "/0/3/0"
+		link = "http://thepiratebay.se/" + info[0] + "/" + info[1].decode('utf8').encode('iso-8859-1') + "/0/3/" + info[2]
+		print link
+		exit()
 		try:
 			page = urllib2.urlopen(link)
 		except:
@@ -140,5 +150,5 @@ if (len(sys.argv) == 2) or (len(sys.argv) == 3):
 	xml = xml_constructor(soup)
 	if len(sys.argv) >= 3:
 		write_file(sys.argv[2], xml)
-	else:
-		print xml
+#	else:
+#		print xml
