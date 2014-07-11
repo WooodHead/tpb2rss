@@ -6,16 +6,9 @@ import datetime
 import urllib2
 import tpb2rss
 
-virtenv = os.environ['OPENSHIFT_PYTHON_DIR'] + '/virtenv/'
-virtualenv = os.path.join(virtenv, 'bin/activate_this.py')
-try:
-	execfile(virtualenv, dict(__file__=virtualenv))
-except IOError:
-	pass
-
 def feed_generator(path_info):
 	try:
-		xml = tpb2rss.xml_from_url(path_info)
+		xml = tpb2rss.xml_from_url(path_info, False)
 		return xml
 	except:
 		return None
@@ -177,11 +170,11 @@ def main_body_generator(xml, path_info):
 	html += "\n\t\t}\n"
 	if xml == None:
 		html += "\n\t\t#message {"
-		html += "\n\t\t\twidth: 260px;"
+		html += "\n\t\t\twidth: 120px;"
 		html += "\n\t\t\tpadding: 8px 8px;"
 		html += "\n\t\t\tcolor: #b94a48;"
 		html += "\n\t\t\ttext-align: center;"
-		html += "\n\t\t\tmargin-left: 320px;"
+		html += "\n\t\t\tmargin-left: 390px;"
 		html += "\n\t\t\tbackground-color: #f2dede;"
 		html += "\n\t\t\tborder-color: #eed3d7;"
 		html += "\n\t\t\ttext-shadow: 0 1px 0 rgba(255, 255, 255, 0.5);"
@@ -244,13 +237,15 @@ def main_body_generator(xml, path_info):
 	html += "\n\t\t</form>"
 	html += "\n\t</div>"
 	if xml == None:
-		html += "\n\t<div id=\"message\">Error while processing your search</div>"
+		html += "\n\t<div id=\"message\">Page not found</div>"
 		html += "\n\t<!-- " + path_info + " -->"
 	html += "\n</body>"
 	html += "\n</html>"
 	return html
 
 def application(environ, start_response):
+	status = "200 OK"
+
 	if (( environ['PATH_INFO'] == "") or ( environ['PATH_INFO'] == "/" )):
 		xml = False
 	else:
@@ -260,9 +255,9 @@ def application(environ, start_response):
 		response_body = xml
 	else:
 		ctype = 'text/html'
+		status = "404 Not Found"
 		response_body = main_body_generator(xml, environ['PATH_INFO'])
 
-	status = "200 OK"
 	response_headers = [('Content-Type', ctype), ('Content-Length', str(len(response_body)))]
 
 	start_response(status, response_headers)
