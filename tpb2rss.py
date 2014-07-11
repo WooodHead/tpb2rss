@@ -89,7 +89,7 @@ def item_constructor(item, seeders, leechers):
 	item_xml += "\n\t\t\t<link><![CDATA[" + item[9] + "]]></link>"
 	uploaded = item[find_string(item, "Uploaded")]
 	item_xml += "\n\t\t\t<pubDate>" + datetime_parser(uploaded.split(" ")[1][:-1]) + " GMT</pubDate>"
-	item_xml += "\n\t\t\t<description><![CDATA[Link: https://thepiratebay.se" + link
+	item_xml += "\n\t\t\t<description><![CDATA[Link: https://thepiratebay.se" + link + "/"
 	if find_string(item, "piratebaytorrents"):
 		item_xml += "<br>Torrent: " + str(item[find_string(item, "piratebaytorrents")]).replace("//piratebaytorrents", "https://piratebaytorrents")
 	if find_string(item, "Browse "):
@@ -97,7 +97,7 @@ def item_constructor(item, seeders, leechers):
 	item_xml += "<br>Size: " + uploaded.split(" ")[3][:-1]
 	item_xml += "<br>Seeders: " + seeders
 	item_xml += "<br>Leechers: " + leechers + "]]></description>"
-	item_xml += "\n\t\t\t<guid>https://thepiratebay.se" + link + "</guid>"
+	item_xml += "\n\t\t\t<guid>https://thepiratebay.se" + link + "/</guid>"
 	item_xml += "\n\t\t\t<torrent xmlns=\"http://xmlns.ezrss.it/0.1/\">"
 	item_xml += "\n\t\t\t\t<infoHash>" + info_hash + "</infoHash>"
 	item_xml += "\n\t\t\t\t<magnetURI><![CDATA[" + item[9] + "]]></magnetURI>"
@@ -115,7 +115,7 @@ def xml_constructor(soup):
 	
 	title = title.decode('utf8').encode('iso-8859-1')
 	
-	xml = "<rss version=\"2.0\">\n\t<channel>\n\t\t<title>TPB2RSS: " + title + "</title>\n" + "\t\t<link>" + link + "</link>\n\t\t<description>The Pirate Bay " + page_type + " feed for \"" + title + "\"</description>\n" + "\t\t<lastBuildDate>" + str(datetime.datetime.utcnow().strftime("%a, %d %b %Y %H:%M:%S")) + " GMT</lastBuildDate>\n\t\t<language>en-us</language>\n\t\t<generator>TPB2RSS 1.0</generator>\n\t\t<docs>http://github.com/camporez/tpb2rss</docs>\n\t\t<webMaster>ian@camporez.com</webMaster>"
+	xml = "<rss version=\"2.0\">\n\t<channel>\n\t\t<title>TPB2RSS: " + title + "</title>\n" + "\t\t<link>" + link + "/</link>\n\t\t<description>The Pirate Bay " + page_type + " feed for \"" + title + "\"</description>\n" + "\t\t<lastBuildDate>" + str(datetime.datetime.utcnow().strftime("%a, %d %b %Y %H:%M:%S")) + " GMT</lastBuildDate>\n\t\t<language>en-us</language>\n\t\t<generator>TPB2RSS 1.0</generator>\n\t\t<docs>http://github.com/camporez/tpb2rss/</docs>\n\t\t<webMaster>ian@camporez.com</webMaster>"
 	tables = soup("td")
 	position = 0
 	for i in range(len(tables) / 4):
