@@ -2,52 +2,47 @@
 # -*- coding: cp1252 -*-
 from bs4 import BeautifulSoup
 import sys
+import re
 import datetime
 import urllib2
 
-def url_parser(search_string, preserve_pag_order):
+def url_parser(search_string, keep_pagination_order):
 	url = filter(None, search_string.split("/"))
-	if (( url[0] == "http:" ) or ( url[0] == "https:" )) and ( url[1].startswith("thepiratebay") and ( len(url) >= 4 ) ):
+	if (( url[0] == "search" ) or ( url[0] == "user" ) or ( url[0] == "browse" )) and ( len(url) > 1 ):
+		if url[-1].isdigit() and url[-2].isdigit() and not url[-3].isdigit():
+			url.append("0")
 		try:
-			filters = url[6]
+			if url[-2].isdigit() and url[-3].isdigit() and re.match(r"^[0-9]+(,[0-9])*$", url[-1]):
+				filters = url[-1]
+				link = " ".join(url[1:-3])
+			else:
+				filters = "0"
+				link = " ".join(url[1:])
 		except:
 			filters = "0"
-		if preserve_pag_order:
+		if keep_pagination_order:
 			try:
-				pag = int(url[4])
-				order = int(url[5])
+				pag = int(url[-3])
+				order = int(url[-2])
 			except:
-				preserve_pag_order = False
+				keep_pagination_order = False
 				filters = "0"
-		if not preserve_pag_order:
-			pag = "0"
-			order = "3"
-		return [url[2], url[3].decode('iso-8859-1').encode('utf8'), str(pag), str(order), filters]
-	elif (( url[0] == "search" ) or ( url[0] == "user" ) or ( url[0] == "browse" )) and ( len(url) > 1 ):
-		try:
-			filters = url[4]
-		except:
-			filters = "0"
-		if preserve_pag_order:
-			try:
-				pag = int(url[2])
-				order = int(url[3])
-			except:
-				preserve_pag_order = False
-				filters = "0"
-		if not preserve_pag_order:
-			pag = "0"
-			order = "3"
-		return [url[0], url[1].decode('iso-8859-1').encode('utf8'), str(pag), str(order), filters]
-	elif ( len(url) == 1 ) and ( not search_string.startswith("/") ):
-		return ["search", search_string.decode('iso-8859-1').encode('utf8'), "0", "3" "0"]
+				link = " ".join(url[1:])
+		if not keep_pagination_order:
+			pag = 0
+			order = 3
+		return [url[0], link.decode('iso-8859-1').encode('utf8'), str(pag), str(order), filters]
+	elif ( len(url) >= 1 ) and ( not re.match(r"^http(s)?://", search_string, flags=re.I) ) and ( not search_string.startswith("/") ):
+		search_string = search_string.replace("/", " ")
+		return ["search", search_string.decode('iso-8859-1').encode('utf8'), "0", "3", "0"]
 	return None
 
-def open_url(search_string, preserve_pag_order):
+def open_url(search_string, keep_pagination_order):
 	global soup, info, link
-	info = url_parser(search_string, preserve_pag_order)
+	search_string = re.sub(r"^(http(s)?://)?(www.)?thepiratebay.[a-z]*", "", search_string, flags=re.I)
+	info = url_parser(search_string, keep_pagination_order)
 	if info:
-		link = "http://thepiratebay.se/" + info[0] + "/" + info[1].decode('utf8').encode('iso-8859-1') +  "/" + "/".join(info[2:5])
+		link = "http://thepiratebay.se/" + info[0] + "/" + info[1].decode('utf8').encode('iso-8859-1') +  "/" + "/".join(info[-3:])
 		try:
 			page = urllib2.urlopen(link)
 		except:
@@ -76,8 +71,7 @@ def write_file(output_file, content):
 def datetime_parser(raw_datetime):
 	if "mins" in raw_datetime:
 		raw_datetime = str(raw_datetime).replace(" mins ago", "")
-		raw_datetime = str(raw_datetime).replace("<b>", "")
-		raw_datetime = str(raw_datetime).replace("</b>", "")
+		raw_datetime = re.sub(r"<(/)?b>", "", str(raw_datetime))
 		raw_datetime = (datetime.datetime.utcnow() - datetime.timedelta(minutes=int(raw_datetime))).strftime("%a, %d %b %Y %H:%M")
 		return raw_datetime + ":00"
 	elif "Today" in raw_datetime:
@@ -119,7 +113,7 @@ def item_constructor(item, seeders, leechers, category):
 	item_xml += "\n\t\t\t<pubDate>" + datetime_parser(uploaded.split(" ")[1][:-1]) + " GMT</pubDate>"
 	item_xml += "\n\t\t\t<description><![CDATA[Link: https://thepiratebay.se" + link + "/"
 	if find_string(item, "piratebaytorrents"):
-		item_xml += "<br>Torrent: " + str(item[find_string(item, "piratebaytorrents")]).replace("//piratebaytorrents", "https://piratebaytorrents")
+		item_xml += "<br>Torrent: " + re.sub(r"^//", "https://", str(item[find_string(item, "piratebaytorrents")]))
 	if find_string(item, "Browse "):
 		item_xml += "<br>Uploader: " + str(item[find_string(item, "Browse ")]).replace("Browse ", "")
 	item_xml += "<br>Category: " + category
@@ -149,14 +143,14 @@ def xml_constructor(soup):
 		item = str(tables[position + 1]).split("\"")
 		seeders = str(str(tables[position + 2]).split(">")[1]).split("<")[0]
 		leechers = str(str(tables[position + 3]).split(">")[1]).split("<")[0]
-		category = ((''.join( BeautifulSoup(str(tables[position])).findAll( text = True ) )).replace("\t", "")).replace("\n", " ")[2:].decode('iso-8859-1').encode('utf8')
+		category = ((re.sub(r"(\n|\t)", "", (''.join( BeautifulSoup(str(tables[position])).findAll( text = True ) )))).replace("(", " (")).decode('iso-8859-1').encode('utf8')
 		xml += item_constructor(item, seeders, leechers, category)
 		position += 4
 	xml += "\n\t</channel>" + "\n</rss>"
 	return xml
 
-def xml_from_url(search_string):
-	open_url(search_string, False)
+def xml_from_url(search_string, keep_pagination_order):
+	open_url(search_string, keep_pagination_order)
 	xml = xml_constructor(soup)
 	return xml
 
