@@ -176,7 +176,6 @@ def main_body_generator(xml, path_info):
 		html += "\n\t\t\ttext-align: center;"
 		html += "\n\t\t\tmargin-left: 390px;"
 		html += "\n\t\t\tbackground-color: #f2dede;"
-		html += "\n\t\t\tborder-color: #eed3d7;"
 		html += "\n\t\t\ttext-shadow: 0 1px 0 rgba(255, 255, 255, 0.5);"
 		html += "\n\t\t\tborder: 1px solid #fbeed5;"
 		html += "\n\t\t\t-webkit-border-radius: 4px;"
