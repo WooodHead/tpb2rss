@@ -28,8 +28,6 @@ def open_url(search_string):
 	info = url_parser(search_string)
 	if info:
 		link = "http://thepiratebay.se/" + info[0] + "/" + info[1].decode('utf8').encode('iso-8859-1') + "/0/3/" + info[2]
-		print link
-		exit()
 		try:
 			page = urllib2.urlopen(link)
 		except:
@@ -150,5 +148,5 @@ if (len(sys.argv) == 2) or (len(sys.argv) == 3):
 	xml = xml_constructor(soup)
 	if len(sys.argv) >= 3:
 		write_file(sys.argv[2], xml)
-#	else:
-#		print xml
+	else:
+		print xml
