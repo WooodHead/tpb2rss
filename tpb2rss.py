@@ -5,29 +5,49 @@ import sys
 import datetime
 import urllib2
 
-def url_parser(search_string):
+def url_parser(search_string, preserve_pag_order):
 	url = filter(None, search_string.split("/"))
 	if (( url[0] == "http:" ) or ( url[0] == "https:" )) and ( url[1].startswith("thepiratebay") and ( len(url) >= 4 ) ):
 		try:
 			filters = url[6]
 		except:
 			filters = "0"
-		return [url[2], url[3].decode('iso-8859-1').encode('utf8'), filters]
+		if preserve_pag_order:
+			try:
+				pag = int(url[4])
+				order = int(url[5])
+			except:
+				preserve_pag_order = False
+				filters = "0"
+		if not preserve_pag_order:
+			pag = "0"
+			order = "3"
+		return [url[2], url[3].decode('iso-8859-1').encode('utf8'), str(pag), str(order), filters]
 	elif (( url[0] == "search" ) or ( url[0] == "user" ) or ( url[0] == "browse" )) and ( len(url) > 1 ):
 		try:
 			filters = url[4]
 		except:
 			filters = "0"
-		return [url[0], url[1].decode('iso-8859-1').encode('utf8'), filters]
+		if preserve_pag_order:
+			try:
+				pag = int(url[2])
+				order = int(url[3])
+			except:
+				preserve_pag_order = False
+				filters = "0"
+		if not preserve_pag_order:
+			pag = "0"
+			order = "3"
+		return [url[0], url[1].decode('iso-8859-1').encode('utf8'), str(pag), str(order), filters]
 	elif ( len(url) == 1 ) and ( not search_string.startswith("/") ):
-		return ["search", search_string.decode('iso-8859-1').encode('utf8'), "0"]
+		return ["search", search_string.decode('iso-8859-1').encode('utf8'), "0", "3" "0"]
 	return None
 
-def open_url(search_string):
+def open_url(search_string, preserve_pag_order):
 	global soup, info, link
-	info = url_parser(search_string)
+	info = url_parser(search_string, preserve_pag_order)
 	if info:
-		link = "http://thepiratebay.se/" + info[0] + "/" + info[1].decode('utf8').encode('iso-8859-1') + "/0/3/" + info[2]
+		link = "http://thepiratebay.se/" + info[0] + "/" + info[1].decode('utf8').encode('iso-8859-1') +  "/" + "/".join(info[2:5])
 		try:
 			page = urllib2.urlopen(link)
 		except:
@@ -121,9 +141,7 @@ def xml_constructor(soup):
 		title = str(" ".join((soup.span.contents[0].split(" "))[1:]))
 	elif ( page_type == "user" ):
 		title = info[1]
-	
 	title = title.decode('utf8').encode('iso-8859-1')
-	
 	xml = "<rss version=\"2.0\">\n\t<channel>\n\t\t<title>TPB2RSS: " + title + "</title>\n" + "\t\t<link>" + link + "/</link>\n\t\t<description>The Pirate Bay " + page_type + " feed for \"" + title + "\"</description>\n" + "\t\t<lastBuildDate>" + str(datetime.datetime.utcnow().strftime("%a, %d %b %Y %H:%M:%S")) + " GMT</lastBuildDate>\n\t\t<language>en-us</language>\n\t\t<generator>TPB2RSS 1.0</generator>\n\t\t<docs>http://github.com/camporez/tpb2rss/</docs>\n\t\t<webMaster>ian@camporez.com</webMaster>"
 	tables = soup("td")
 	position = 0
@@ -138,7 +156,7 @@ def xml_constructor(soup):
 	return xml
 
 def xml_from_url(search_string):
-	open_url(search_string)
+	open_url(search_string, False)
 	xml = xml_constructor(soup)
 	return xml
 
@@ -146,7 +164,7 @@ if (len(sys.argv) == 2) or (len(sys.argv) == 3):
 	try:
 		open_file(sys.argv[1])
 	except:
-		open_url(sys.argv[1])
+		open_url(sys.argv[1], False)
 	xml = xml_constructor(soup)
 	if len(sys.argv) >= 3:
 		write_file(sys.argv[2], xml)
