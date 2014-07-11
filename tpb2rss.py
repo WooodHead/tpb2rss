@@ -40,7 +40,7 @@ def url_parser(search_string, keep_pagination_order):
 def open_url(search_string, keep_pagination_order):
 	global soup, info, link
 	search_string = re.sub(r"^(http(s)?://)?(www.)?thepiratebay.[a-z]*", "", search_string, flags=re.I)
-	info = url_parser(search_string, keep_pagination_order)
+	info = url_parser(search_string.strip(), keep_pagination_order)
 	if info:
 		link = "http://thepiratebay.se/" + info[0] + "/" + info[1].decode('utf8').encode('iso-8859-1') +  "/" + "/".join(info[-3:])
 		try:

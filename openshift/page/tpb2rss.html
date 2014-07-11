@@ -52,7 +52,7 @@
 			font-family: "Impact", sans-serif;
 			font-weight: bolder;
 			text-shadow: #253e45 -1px 1px 0,
-			#253e45 -2px 2px 0;
+				#253e45 -2px 2px 0;
 			margin: 70px 0 0 0;
 			display: block;
 		}
@@ -129,11 +129,12 @@
 			top: 20px;
 			position: absolute;
 		}
-		
+
 		#github iframe {
 			width: 90px;
 			height: 30px;
 		}
+
 		@media screen and (max-width: 640px) {
 			h1 {
 				font-size: 60px;
@@ -169,8 +170,7 @@
 			var input = document.getElementById("search-text").value;
 			var input = input.replace(/^((http)s{0,1}:\/\/(www.){0,1}){0,1}thepiratebay\.[a-z]{1,}\//gi, "");
 			if ((input.substring(0, 7) != "search/") && (input.substring(0, 7) != "browse/") && (input.substring(0, 5) != "user/")) {
-				var input = input.replace(/\/|\s|&|%|#/g, "%20");
-				var input = input.replace("?", "%3F");
+				var input = input.replace(/^\s\s*/, "").replace(/\s\s*$/, "").replace(/\/|\s|&|%|#/g, "%20").replace("?", "%3F");
 				var input = "search/" + input;
 			};
 			if (input.substring(7, url.length + 7) != url) {
