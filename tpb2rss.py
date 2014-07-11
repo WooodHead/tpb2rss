@@ -90,7 +90,7 @@ def find_string(raw_list, word):
 	except:
 		return None
 
-def item_constructor(item, seeders, leechers):
+def item_constructor(item, seeders, leechers, category):
 	link = "/".join(((item[5]).split("/"))[:3])
 	info_hash = (item[9].split(":")[3]).split("&")[0]
 	item_xml = "\n\t\t<item>\n\t\t\t<title>" + str(item[8]).split("</a>")[0][1:] + "</title>"
@@ -102,6 +102,7 @@ def item_constructor(item, seeders, leechers):
 		item_xml += "<br>Torrent: " + str(item[find_string(item, "piratebaytorrents")]).replace("//piratebaytorrents", "https://piratebaytorrents")
 	if find_string(item, "Browse "):
 		item_xml += "<br>Uploader: " + str(item[find_string(item, "Browse ")]).replace("Browse ", "")
+	item_xml += "<br>Category: " + category
 	item_xml += "<br>Size: " + uploaded.split(" ")[3][:-1]
 	item_xml += "<br>Seeders: " + seeders
 	item_xml += "<br>Leechers: " + leechers + "]]></description>"
@@ -130,7 +131,8 @@ def xml_constructor(soup):
 		item = str(tables[position + 1]).split("\"")
 		seeders = str(str(tables[position + 2]).split(">")[1]).split("<")[0]
 		leechers = str(str(tables[position + 3]).split(">")[1]).split("<")[0]
-		xml += item_constructor(item, seeders, leechers)
+		category = ((''.join( BeautifulSoup(str(tables[position])).findAll( text = True ) )).replace("\t", "")).replace("\n", " ")[2:].decode('iso-8859-1').encode('utf8')
+		xml += item_constructor(item, seeders, leechers, category)
 		position += 4
 	xml += "\n\t</channel>" + "\n</rss>"
 	return xml
