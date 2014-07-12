@@ -39,7 +39,7 @@ def url_parser(search_string, keep_pagination_order):
 
 def open_url(search_string, keep_pagination_order):
 	global soup, info, link
-	search_string = re.sub(r"^(http(s)?://)?(www.)?thepiratebay.[a-z]*", "", search_string, flags=re.I)
+	search_string = re.sub(r">|<|#|&|%", "", re.sub(r"^(http(s)?://)?(www.)?thepiratebay.[a-z]*", "", search_string, flags=re.I))
 	info = url_parser(search_string.strip(), keep_pagination_order)
 	if info:
 		link = "http://thepiratebay.se/" + info[0] + "/" + info[1].decode('utf8').encode('iso-8859-1') +  "/" + "/".join(info[-3:])
@@ -154,13 +154,16 @@ def xml_from_url(search_string, keep_pagination_order):
 	xml = xml_constructor(soup)
 	return xml
 
-if (len(sys.argv) == 2) or (len(sys.argv) == 3):
-	try:
-		open_file(sys.argv[1])
-	except:
-		open_url(sys.argv[1], False)
-	xml = xml_constructor(soup)
-	if len(sys.argv) >= 3:
-		write_file(sys.argv[2], xml)
-	else:
-		print xml
+def main(parameters):
+	if (len(parameters) == 2) or (len(parameters) == 3):
+		try:
+			open_file(parameters[1])
+		except:
+			open_url(parameters[1], False)
+		xml = xml_constructor(soup)
+		if len(parameters) >= 3:
+			write_file(parameters[2], xml)
+		else:
+			print xml
+
+main(sys.argv)

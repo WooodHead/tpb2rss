@@ -170,7 +170,7 @@
 			var input = document.getElementById("search-text").value;
 			var input = input.replace(/^((http)s{0,1}:\/\/(www.){0,1}){0,1}thepiratebay\.[a-z]{1,}\//gi, "");
 			if ((input.substring(0, 7) != "search/") && (input.substring(0, 7) != "browse/") && (input.substring(0, 5) != "user/")) {
-				var input = input.replace(/^\s\s*/, "").replace(/\s\s*$/, "").replace(/\/|\s|&|%|#/g, "%20").replace("?", "%3F");
+				var input = input.replace(/\/|\s|&|%|#|>|</g, "%20").replace("?", "%3F").replace(/^(%20)(%20)*/, "").replace(/(%20)(%20)*$/, "");
 				var input = "search/" + input;
 			};
 			if (input.substring(7, url.length + 7) != url) {
