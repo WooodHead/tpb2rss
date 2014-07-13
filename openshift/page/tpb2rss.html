@@ -57,6 +57,11 @@
 			display: block;
 		}
 
+		a {
+			color: #555;
+			text-decoration: none;
+		}
+
 		#search-box {;
 			-webkit-border-radius: 5px;
 			-moz-border-radius: 5px;
@@ -135,6 +140,14 @@
 			height: 30px;
 		}
 
+		#extensions {
+			width: auto;
+			text-align: right;
+			right: 20px;
+			bottom: 20px;
+			position: absolute;
+		}
+
 		@media screen and (max-width: 640px) {
 			h1 {
 				font-size: 60px;
@@ -208,6 +221,11 @@
 			</form>
 		</div>
 		<div id="message">Page not found</div>
+	</div>
+	<div id="extensions">
+		<span>Firefox: <a href="#">Get extension</a></span><br>
+		<span>Chrome: <a href="https://github.com/camporez/tpb2rss/tree/mastes/chrome">Get extension</a></span><br>
+		<span>Bookmarklet: <a href="javascript:!function(){if(/^((http)s{0,1}:\/\/(www.){0,1}){0,1}thepiratebay\.[a-z]+\/(search\/(.)+|user\/(.)+|browse\/[0-9]+|recent)+/.test(location.href)){if(/^((http)s{0,1}:\/\/(www.){0,1}){0,1}thepiratebay\.[a-z]+\/browse\/[0-9]+/.test(location.href))var%20t=%22http://rss.thepiratebay.se/%22+window.location.pathname.split(%22/%22)[2];else%20if(/^((http)s{0,1}:\/\/(www.){0,1}){0,1}thepiratebay\.[a-z]+\/user\/(.)+/.test(location.href))var%20t=document.getElementsByClassName(%22rss%22)[0].href;else%20var%20t=document.URL,t=t.replace(/^((http)s{0,1}:\/\/(www.){0,1}){0,1}thepiratebay\.[a-z]{1,}\//gi,%22http://tpb.camporez.com/%22);window.open(t,%22_blank%22)}}();" class="bookmarklet" alt="TPB2RSS">TPB2RSS</a></span>
 	</div>
 </body>
 </html>
