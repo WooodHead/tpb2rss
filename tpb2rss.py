@@ -148,7 +148,7 @@ def xml_constructor(soup):
 	elif ( page_type == "recent" ):
 		title = "Recent Torrents"
 	title = title.decode('utf8').encode('iso-8859-1')
-	xml = "<rss version=\"2.0\">\n\t<channel>\n\t\t<title>TPB2RSS: " + title + "</title>\n" + "\t\t<link>" + link + "/</link>\n\t\t<description>The Pirate Bay " + page_type + " feed for \"" + title + "\"</description>\n" + "\t\t<lastBuildDate>" + str(datetime.datetime.utcnow().strftime("%a, %d %b %Y %H:%M:%S")) + " GMT</lastBuildDate>\n\t\t<language>en-us</language>\n\t\t<generator>TPB2RSS 1.0</generator>\n\t\t<docs>http://github.com/camporez/tpb2rss/</docs>\n\t\t<webMaster>ian@camporez.com</webMaster>"
+	xml = "<rss version=\"2.0\">\n\t<channel>\n\t\t<title>TPB2RSS: " + title + "</title>\n" + "\t\t<link>" + link + "</link>\n\t\t<description>The Pirate Bay " + page_type + " feed for \"" + title + "\"</description>\n" + "\t\t<lastBuildDate>" + str(datetime.datetime.utcnow().strftime("%a, %d %b %Y %H:%M:%S")) + " GMT</lastBuildDate>\n\t\t<language>en-us</language>\n\t\t<generator>TPB2RSS 1.0</generator>\n\t\t<docs>http://github.com/camporez/tpb2rss/</docs>\n\t\t<webMaster>ian@camporez.com</webMaster>"
 	tables = soup("td")
 	position = 0
 	for i in range(len(tables) / 4):
