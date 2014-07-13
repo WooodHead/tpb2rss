@@ -1,0 +1,21 @@
+{
+    "name": "TPB2RSS",
+    "description": "Puts a RSS button inside every The Pirate Bay search page.",
+    "version": "1.0",
+    "permissions": [
+        "tabs","<all_urls>"
+    ],
+    "icons": {
+        "128": "icon.png"
+    },
+   "content_scripts": [
+      {
+      "matches": [
+         "<all_urls>"
+      ],
+      "js": [ "script.js" ],
+      "run_at": "document_end" 
+      } 
+   ],
+   "manifest_version":2
+}
