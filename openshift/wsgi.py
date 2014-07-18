@@ -245,7 +245,8 @@ def application(environ, start_response):
 		response_body = xml
 	else:
 		ctype = 'text/html'
-		status = "404 Not Found"
+		if xml == None:
+			status = "404 Not Found"
 		response_body = main_body_generator(xml, environ['PATH_INFO'])
 
 	response_headers = [('Content-Type', ctype), ('Content-Length', str(len(response_body)))]
