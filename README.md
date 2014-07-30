@@ -10,6 +10,30 @@ Usage
 ./tpb2rss.py ( INPUT_FILE | TPB_URL | SEARCH_TERM ) [ OUTPUT_FILE ]
 ```
 
+Calling from another python program
+-----------------------------------
+
+Import the program:
+
+```
+import tpb2rss
+```
+
+Creating a XML from a TPB url:
+
+```
+tpb2rss.xml_from_url(A, B)
+```
+
+Creating a XML from a TPB saved page:
+```
+tpb2rss.xml_from_file(A, B)
+```
+
+- `A`: search term, URL or filename.
+
+- `B`: preserve pagination and order info from the URL (`true` or `false`).
+
 Installing on OpenShift
 -----------------------
 
