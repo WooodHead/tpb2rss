@@ -6,6 +6,14 @@ import re
 import datetime
 import urllib2
 
+__author__ = "Ian Camporez Brunelli"
+__email__ = "ian@camporez.com"
+__version__ = "1.1"
+__docs__ = "https://github.com/camporez/tpb2rss/"
+__license__ = "Apache License 2.0"
+
+__tpburl__ = "https://thepiratebay.se"
+
 def url_parser(search_string, keep_pagination_order):
 	url = filter(None, search_string.split("/"))
 	if (( url[0] == "search" ) or ( url[0] == "user" ) or ( url[0] == "browse" )) and ( len(url) > 1 ):
@@ -44,7 +52,7 @@ def open_url(search_string, keep_pagination_order):
 	search_string = re.sub(r">|<|#|&", "", re.sub(r"^(http(s)?://)?(www.)?thepiratebay.[a-z]*", "", search_string, flags=re.I))
 	info = url_parser(search_string.strip(), keep_pagination_order)
 	if info:
-		link = "http://thepiratebay.se/" + info[0] + "/" + info[1].decode("utf8").encode("iso-8859-1") + info[-1]
+		link = __tpburl__ + "/" + info[0] + "/" + info[1].decode("utf8").encode("iso-8859-1") + info[-1]
 		try:
 			page = urllib2.urlopen(link)
 		except:
@@ -63,7 +71,7 @@ def open_file(input_file, keep_pagination_order):
 		link = str((soup.findAll("link", rel="canonical")[0])).split("\"")[1]
 		search_string = re.sub(r">|<|#|&", "", re.sub(r"^(http(s)?://)?(www.)?thepiratebay.[a-z]*", "", link, flags=re.I))
 		info = url_parser(search_string.strip(), keep_pagination_order)
-		link = "http://thepiratebay.se/" + info[0] + "/" + info[1].decode("utf8").encode("iso-8859-1") + info[-1]
+		link = __tpburl__ + "/" + info[0] + "/" + info[1].decode("utf8").encode("iso-8859-1") + info[-1]
 	except:
 		print "The given file is invalid:", input_file
 		exit(1)
@@ -119,7 +127,7 @@ def item_constructor(item, seeders, leechers, category):
 	item_xml += "\n\t\t\t<link><![CDATA[" + item[9] + "]]></link>"
 	uploaded = item[find_string(item, "Uploaded")]
 	item_xml += "\n\t\t\t<pubDate>" + datetime_parser(uploaded.split(" ")[1][:-1]) + " GMT</pubDate>"
-	item_xml += "\n\t\t\t<description><![CDATA[Link: https://thepiratebay.se" + link + "/"
+	item_xml += "\n\t\t\t<description><![CDATA[Link: " + __tpburl__ + link + "/"
 	if find_string(item, "piratebaytorrents"):
 		item_xml += "<br>Torrent: " + re.sub(r"^//", "https://", str(item[find_string(item, "piratebaytorrents")]))
 	if find_string(item, "Browse "):
@@ -128,7 +136,7 @@ def item_constructor(item, seeders, leechers, category):
 	item_xml += "<br>Size: " + uploaded.split(" ")[3][:-1]
 	item_xml += "<br>Seeders: " + seeders
 	item_xml += "<br>Leechers: " + leechers + "]]></description>"
-	item_xml += "\n\t\t\t<guid>https://thepiratebay.se" + link + "/</guid>"
+	item_xml += "\n\t\t\t<guid>" + __tpburl__ + link + "/</guid>"
 	item_xml += "\n\t\t\t<torrent xmlns=\"http://xmlns.ezrss.it/0.1/\">"
 	item_xml += "\n\t\t\t\t<infoHash>" + info_hash + "</infoHash>"
 	item_xml += "\n\t\t\t\t<magnetURI><![CDATA[" + item[9] + "]]></magnetURI>"
@@ -146,7 +154,7 @@ def xml_constructor(soup):
 	elif ( page_type == "recent" ):
 		title = "Recent Torrents"
 	title = title.decode("utf8").encode("iso-8859-1")
-	xml = "<rss version=\"2.0\">\n\t<channel>\n\t\t<title>TPB2RSS: " + title + "</title>\n" + "\t\t<link>" + link + "</link>\n\t\t<description>The Pirate Bay " + page_type + " feed for \"" + title + "\"</description>\n" + "\t\t<lastBuildDate>" + str(datetime.datetime.utcnow().strftime("%a, %d %b %Y %H:%M:%S")) + " GMT</lastBuildDate>\n\t\t<language>en-us</language>\n\t\t<generator>TPB2RSS 1.0</generator>\n\t\t<docs>http://github.com/camporez/tpb2rss/</docs>\n\t\t<webMaster>ian@camporez.com</webMaster>"
+	xml = "<rss version=\"2.0\">\n\t<channel>\n\t\t<title>TPB2RSS: " + title + "</title>\n" + "\t\t<link>" + link + "</link>\n\t\t<description>The Pirate Bay " + page_type + " feed for \"" + title + "\"</description>\n" + "\t\t<lastBuildDate>" + str(datetime.datetime.utcnow().strftime("%a, %d %b %Y %H:%M:%S")) + " GMT</lastBuildDate>\n\t\t<language>en-us</language>\n\t\t<generator>TPB2RSS " + __version__ + "</generator>\n\t\t<docs>" + __docs__ + "</docs>\n\t\t<webMaster>" + __email__ + "</webMaster>"
 	tables = soup("td")
 	position = 0
 	for i in range(len(tables) / 4):
