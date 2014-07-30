@@ -31,12 +31,12 @@ def url_parser(search_string, keep_pagination_order):
 		if not keep_pagination_order:
 			pag = 0
 			order = 3
-		return [url[0], link.decode('iso-8859-1').encode('utf8'), "/" + str(pag) + "/" + str(order) + "/" + filters + "/"]
+		return [url[0], link.decode("iso-8859-1").encode("utf8"), "/" + str(pag) + "/" + str(order) + "/" + filters + "/"]
 	elif url[0] == "recent":
 		return [url[0], ""]
 	elif ( len(url) >= 1 ) and ( not re.match(r"^http(s)?://", search_string, flags=re.I) ) and ( not search_string.startswith("/") ):
 		search_string = search_string.replace("/", " ")
-		return ["search", search_string.decode('iso-8859-1').encode('utf8') + "/0/3/0/"]
+		return ["search", search_string.decode("iso-8859-1").encode("utf8"), "/0/3/0/"]
 	return None
 
 def open_url(search_string, keep_pagination_order):
@@ -44,7 +44,7 @@ def open_url(search_string, keep_pagination_order):
 	search_string = re.sub(r">|<|#|&", "", re.sub(r"^(http(s)?://)?(www.)?thepiratebay.[a-z]*", "", search_string, flags=re.I))
 	info = url_parser(search_string.strip(), keep_pagination_order)
 	if info:
-		link = "http://thepiratebay.se/" + info[0] + "/" + info[1].decode('utf8').encode('iso-8859-1') + info[-1]
+		link = "http://thepiratebay.se/" + info[0] + "/" + info[1].decode("utf8").encode("iso-8859-1") + info[-1]
 		try:
 			page = urllib2.urlopen(link)
 		except:
@@ -59,12 +59,12 @@ def open_file(input_file, keep_pagination_order):
 	global soup, info, link
 	file = open(input_file)
 	soup = BeautifulSoup(file.read())
-	link = str((soup.findAll('link', rel='canonical')[0])).split("\"")[1]
-	search_string = re.sub(r">|<|#|&", "", re.sub(r"^(http(s)?://)?(www.)?thepiratebay.[a-z]*", "", link, flags=re.I))
-	info = url_parser(search_string.strip(), keep_pagination_order)
-	if info:
-		link = "http://thepiratebay.se/" + info[0] + "/" + info[1].decode('utf8').encode('iso-8859-1') + info[-1]
-	else:
+	try:
+		link = str((soup.findAll("link", rel="canonical")[0])).split("\"")[1]
+		search_string = re.sub(r">|<|#|&", "", re.sub(r"^(http(s)?://)?(www.)?thepiratebay.[a-z]*", "", link, flags=re.I))
+		info = url_parser(search_string.strip(), keep_pagination_order)
+		link = "http://thepiratebay.se/" + info[0] + "/" + info[1].decode("utf8").encode("iso-8859-1") + info[-1]
+	except:
 		print "The given file is invalid:", input_file
 		exit(1)
 	file.close()
@@ -79,10 +79,8 @@ def write_file(output_file, content):
 		exit(1)
 
 def datetime_parser(raw_datetime):
-	if "mins" in raw_datetime:
-		raw_datetime = str(raw_datetime).replace(" mins ago", "")
-		raw_datetime = re.sub(r"<(/)?b>", "", str(raw_datetime))
-		raw_datetime = (datetime.datetime.utcnow() - datetime.timedelta(minutes=int(raw_datetime))).strftime("%a, %d %b %Y %H:%M")
+	if "min" in raw_datetime:
+		raw_datetime = (datetime.datetime.utcnow() - datetime.timedelta(minutes=int(re.sub("[^0-9]", "", raw_datetime)))).strftime("%a, %d %b %Y %H:%M")
 		return raw_datetime + ":00"
 	elif "Today" in raw_datetime:
 		raw_datetime = str(raw_datetime).replace("Today", datetime.datetime.utcnow().strftime("%a, %d %b %Y"))
@@ -147,7 +145,7 @@ def xml_constructor(soup):
 		title = info[1]
 	elif ( page_type == "recent" ):
 		title = "Recent Torrents"
-	title = title.decode('utf8').encode('iso-8859-1')
+	title = title.decode("utf8").encode("iso-8859-1")
 	xml = "<rss version=\"2.0\">\n\t<channel>\n\t\t<title>TPB2RSS: " + title + "</title>\n" + "\t\t<link>" + link + "</link>\n\t\t<description>The Pirate Bay " + page_type + " feed for \"" + title + "\"</description>\n" + "\t\t<lastBuildDate>" + str(datetime.datetime.utcnow().strftime("%a, %d %b %Y %H:%M:%S")) + " GMT</lastBuildDate>\n\t\t<language>en-us</language>\n\t\t<generator>TPB2RSS 1.0</generator>\n\t\t<docs>http://github.com/camporez/tpb2rss/</docs>\n\t\t<webMaster>ian@camporez.com</webMaster>"
 	tables = soup("td")
 	position = 0
@@ -155,10 +153,15 @@ def xml_constructor(soup):
 		item = str(tables[position + 1]).split("\"")
 		seeders = str(str(tables[position + 2]).split(">")[1]).split("<")[0]
 		leechers = str(str(tables[position + 3]).split(">")[1]).split("<")[0]
-		category = ((re.sub(r"(\n|\t)", "", (''.join( BeautifulSoup(str(tables[position])).findAll( text = True ) )))).replace("(", " (")).decode('iso-8859-1').encode('utf8')
+		category = ((re.sub(r"(\n|\t)", "", ("".join( BeautifulSoup(str(tables[position])).findAll( text = True ) )))).replace("(", " (")).decode("iso-8859-1").encode("utf8")
 		xml += item_constructor(item, seeders, leechers, category)
 		position += 4
 	xml += "\n\t</channel>" + "\n</rss>"
+	return xml
+
+def xml_from_file(search_string, keep_pagination_order):
+	open_file(search_string, keep_pagination_order)
+	xml = xml_constructor(soup)
 	return xml
 
 def xml_from_url(search_string, keep_pagination_order):
@@ -169,10 +172,9 @@ def xml_from_url(search_string, keep_pagination_order):
 def main(parameters):
 	if (len(parameters) == 2) or (len(parameters) == 3):
 		try:
-			open_file(parameters[1], True)
+			xml = xml_from_file(parameters[1], True)
 		except IOError:
-			open_url(parameters[1], False)
-		xml = xml_constructor(soup)
+			xml = xml_from_url(parameters[1], False)
 		if len(parameters) >= 3:
 			write_file(parameters[2], xml)
 		else:
