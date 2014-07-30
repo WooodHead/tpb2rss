@@ -1,17 +1,20 @@
 #!/bin/env python2
 
+# Imports
 from bs4 import BeautifulSoup
 import sys
 import re
 import datetime
 import urllib2
 
+# Project info
 __author__  = "Ian Camporez Brunelli"
 __email__   = "ian@camporez.com"
 __version__ = "1.1"
 __docs__    = "https://github.com/camporez/tpb2rss/"
 __license__ = "Apache License 2.0"
 
+# Changing this URL may need some other changes on the code. Be careful.
 __tpburl__  = "https://thepiratebay.se"
 
 def url_parser(search_string, keep_pagination_order):
