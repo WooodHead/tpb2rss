@@ -1,18 +1,18 @@
 #!/bin/env python2
-# -*- coding: cp1252 -*-
+
 from bs4 import BeautifulSoup
 import sys
 import re
 import datetime
 import urllib2
 
-__author__ = "Ian Camporez Brunelli"
-__email__ = "ian@camporez.com"
+__author__  = "Ian Camporez Brunelli"
+__email__   = "ian@camporez.com"
 __version__ = "1.1"
-__docs__ = "https://github.com/camporez/tpb2rss/"
+__docs__    = "https://github.com/camporez/tpb2rss/"
 __license__ = "Apache License 2.0"
 
-__tpburl__ = "https://thepiratebay.se"
+__tpburl__  = "https://thepiratebay.se"
 
 def url_parser(search_string, keep_pagination_order):
 	url = filter(None, search_string.split("/"))
