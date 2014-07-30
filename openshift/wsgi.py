@@ -18,7 +18,7 @@ def main_body_generator(xml, path_info):
 	html += "\n<html lang=\"en\">"
 	html += "\n<head>"
 	html += "\n\t<meta charset=\"utf-8\" />"
-	html += "\n\t<title>TPB2RSS - A RSS feed generator for ThePirateBay</title>"
+	html += "\n\t<title>TPB2RSS - A RSS feed generator for The Pirate Bay</title>"
 	html += "\n\t<meta name=\"mobile-web-app-capable\" content=\"yes\">"
 	html += "\n\t<meta name=\"HandheldFriendly\" content=\"True\" />"
 	html += "\n\t<style type=\"text/css\">"
