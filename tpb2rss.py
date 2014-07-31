@@ -52,7 +52,7 @@ def url_parser(search_string, keep_pagination_order):
 
 def open_url(search_string, keep_pagination_order):
 	global soup, info, link
-	search_string = re.sub(r">|<|#|&", "", re.sub(r"^(http(s)?://)?(www.)?thepiratebay.[a-z]*", "", search_string, flags=re.I))
+	search_string = re.sub(r">|<|#|&", "", re.sub(r"^(http(s)?://)?(www.)?" + re.sub(r"^http(s)?://", "", re.sub(r".[a-z]*(:[0-9]*)?$", "", __tpburl__)) + r".[a-z]*", "", search_string, flags=re.I))
 	info = url_parser(search_string.strip(), keep_pagination_order)
 	if info:
 		link = __tpburl__ + "/" + info[0] + "/" + info[1].decode("utf8").encode("iso-8859-1") + info[-1]
@@ -72,7 +72,7 @@ def open_file(input_file, keep_pagination_order):
 	soup = BeautifulSoup(file.read())
 	try:
 		link = str((soup.findAll("link", rel="canonical")[0])).split("\"")[1]
-		search_string = re.sub(r">|<|#|&", "", re.sub(r"^(http(s)?://)?(www.)?thepiratebay.[a-z]*", "", link, flags=re.I))
+		search_string = re.sub(r">|<|#|&", "", re.sub(r"^(http(s)?://)?(www.)?" + re.sub(r"^http(s)?://", "", re.sub(r".[a-z]*(:[0-9]*)?$", "", __tpburl__)) + r".[a-z]*", "", link, flags=re.I))
 		info = url_parser(search_string.strip(), keep_pagination_order)
 		link = __tpburl__ + "/" + info[0] + "/" + info[1].decode("utf8").encode("iso-8859-1") + info[-1]
 	except:
@@ -170,12 +170,12 @@ def xml_constructor(soup):
 	xml += "\n\t</channel>" + "\n</rss>"
 	return xml
 
-def xml_from_file(search_string, keep_pagination_order):
-	open_file(search_string, keep_pagination_order)
+def xml_from_file(filename, keep_pagination_order=True):
+	open_file(filename, keep_pagination_order)
 	xml = xml_constructor(soup)
 	return xml
 
-def xml_from_url(search_string, keep_pagination_order):
+def xml_from_url(search_string, keep_pagination_order=False):
 	open_url(search_string, keep_pagination_order)
 	xml = xml_constructor(soup)
 	return xml
@@ -183,9 +183,9 @@ def xml_from_url(search_string, keep_pagination_order):
 def main(parameters):
 	if (len(parameters) == 2) or (len(parameters) == 3):
 		try:
-			xml = xml_from_file(parameters[1], True)
+			xml = xml_from_file(parameters[1])
 		except IOError:
-			xml = xml_from_url(parameters[1], False)
+			xml = xml_from_url(parameters[1])
 		if len(parameters) >= 3:
 			write_file(parameters[2], xml)
 		else:
