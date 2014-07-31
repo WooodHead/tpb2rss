@@ -34,7 +34,7 @@ tpb2rss.xml_from_file(A, B, C)
 
 - `B` (optional, `false` by default): preserve pagination and order info from the URL (`true` or `false`)
 
-- `C` (optional, `https://thepiratebay.se` by default): use a mirror (string)
+- `C` (optional, `https://thepiratebay.se` by default): set a mirror to use (*string*)
 
 Installing on OpenShift
 -----------------------
