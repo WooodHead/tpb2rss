@@ -14,7 +14,7 @@ __version__ = "1.1"
 __docs__    = "https://github.com/camporez/tpb2rss/"
 __license__ = "Apache License 2.0"
 
-# Changing this URL may need some other changes on the code. Be careful.
+# Changing the below URL may need some other changes on the code. Be careful.
 __tpburl__  = "https://thepiratebay.se"
 
 def url_parser(search_string, keep_pagination_order):
