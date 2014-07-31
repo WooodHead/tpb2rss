@@ -17,7 +17,7 @@ __license__ = "Apache License 2.0"
 # Changing the below URL may need some other changes on the code. Be careful.
 __tpburl__  = "https://thepiratebay.se"
 
-def url_parser(search_string, keep_pagination_order):
+def url_parser(search_string, keep_pagination_order, tpburl):
 	url = filter(None, search_string.split("/"))
 	if (( url[0] == "search" ) or ( url[0] == "user" ) or ( url[0] == "browse" )) and ( len(url) > 1 ):
 		if url[-1].isdigit() and url[-2].isdigit() and not url[-3].isdigit():
@@ -50,12 +50,12 @@ def url_parser(search_string, keep_pagination_order):
 		return ["search", search_string.decode("iso-8859-1").encode("utf8"), "/0/3/0/"]
 	return None
 
-def open_url(search_string, keep_pagination_order):
+def open_url(search_string, keep_pagination_order, tpburl):
 	global soup, info, link
-	search_string = re.sub(r">|<|#|&", "", re.sub(r"^(http(s)?://)?(www.)?" + re.sub(r"^http(s)?://", "", re.sub(r".[a-z]*(:[0-9]*)?$", "", __tpburl__)) + r".[a-z]*", "", search_string, flags=re.I))
-	info = url_parser(search_string.strip(), keep_pagination_order)
+	search_string = re.sub(r">|<|#|&", "", re.sub(r"^(http(s)?://)?(www.)?" + re.sub(r"^http(s)?://", "", re.sub(r".[a-z]*(:[0-9]*)?$", "", tpburl)) + r".[a-z]*", "", search_string, flags=re.I))
+	info = url_parser(search_string.strip(), keep_pagination_order, tpburl)
 	if info:
-		link = __tpburl__ + "/" + info[0] + "/" + info[1].decode("utf8").encode("iso-8859-1") + info[-1]
+		link = tpburl + "/" + info[0] + "/" + info[1].decode("utf8").encode("iso-8859-1") + info[-1]
 		try:
 			page = urllib2.urlopen(link)
 		except:
@@ -66,15 +66,15 @@ def open_url(search_string, keep_pagination_order):
 		print "The given string is invalid:", search_string
 		exit(1)
 
-def open_file(input_file, keep_pagination_order):
+def open_file(input_file, keep_pagination_order, tpburl):
 	global soup, info, link
 	file = open(input_file)
 	soup = BeautifulSoup(file.read())
 	try:
 		link = str((soup.findAll("link", rel="canonical")[0])).split("\"")[1]
-		search_string = re.sub(r">|<|#|&", "", re.sub(r"^(http(s)?://)?(www.)?" + re.sub(r"^http(s)?://", "", re.sub(r".[a-z]*(:[0-9]*)?$", "", __tpburl__)) + r".[a-z]*", "", link, flags=re.I))
-		info = url_parser(search_string.strip(), keep_pagination_order)
-		link = __tpburl__ + "/" + info[0] + "/" + info[1].decode("utf8").encode("iso-8859-1") + info[-1]
+		search_string = re.sub(r">|<|#|&", "", re.sub(r"^(http(s)?://)?(www.)?" + re.sub(r"^http(s)?://", "", re.sub(r".[a-z]*(:[0-9]*)?$", "", tpburl)) + r".[a-z]*", "", link, flags=re.I))
+		info = url_parser(search_string.strip(), keep_pagination_order, tpburl)
+		link = tpburl + "/" + info[0] + "/" + info[1].decode("utf8").encode("iso-8859-1") + info[-1]
 	except:
 		print "The given file is invalid:", input_file
 		exit(1)
@@ -130,7 +130,7 @@ def item_constructor(item, seeders, leechers, category):
 	item_xml += "\n\t\t\t<link><![CDATA[" + item[9] + "]]></link>"
 	uploaded = item[find_string(item, "Uploaded")]
 	item_xml += "\n\t\t\t<pubDate>" + datetime_parser(uploaded.split(" ")[1][:-1]) + " GMT</pubDate>"
-	item_xml += "\n\t\t\t<description><![CDATA[Link: " + __tpburl__ + link + "/"
+	item_xml += "\n\t\t\t<description><![CDATA[Link: " + tpburl + link + "/"
 	if find_string(item, "piratebaytorrents"):
 		item_xml += "<br>Torrent: " + re.sub(r"^//", "https://", str(item[find_string(item, "piratebaytorrents")]))
 	if find_string(item, "Browse "):
@@ -139,7 +139,7 @@ def item_constructor(item, seeders, leechers, category):
 	item_xml += "<br>Size: " + uploaded.split(" ")[3][:-1]
 	item_xml += "<br>Seeders: " + seeders
 	item_xml += "<br>Leechers: " + leechers + "]]></description>"
-	item_xml += "\n\t\t\t<guid>" + __tpburl__ + link + "/</guid>"
+	item_xml += "\n\t\t\t<guid>" + tpburl + link + "/</guid>"
 	item_xml += "\n\t\t\t<torrent xmlns=\"http://xmlns.ezrss.it/0.1/\">"
 	item_xml += "\n\t\t\t\t<infoHash>" + info_hash + "</infoHash>"
 	item_xml += "\n\t\t\t\t<magnetURI><![CDATA[" + item[9] + "]]></magnetURI>"
@@ -170,13 +170,13 @@ def xml_constructor(soup):
 	xml += "\n\t</channel>" + "\n</rss>"
 	return xml
 
-def xml_from_file(filename, keep_pagination_order=True):
-	open_file(filename, keep_pagination_order)
+def xml_from_file(filename, keep_pagination_order=True, tpburl=__tpburl__):
+	open_file(filename, keep_pagination_order, tpburl)
 	xml = xml_constructor(soup)
 	return xml
 
-def xml_from_url(search_string, keep_pagination_order=False):
-	open_url(search_string, keep_pagination_order)
+def xml_from_url(search_string, keep_pagination_order=False, tpburl=__tpburl__):
+	open_url(search_string, keep_pagination_order, tpburl)
 	xml = xml_constructor(soup)
 	return xml
 
