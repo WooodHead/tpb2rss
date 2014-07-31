@@ -123,7 +123,7 @@ def find_string(raw_list, word):
 	except:
 		return None
 
-def item_constructor(item, seeders, leechers, category):
+def item_constructor(item, seeders, leechers, category, tpburl):
 	link = "/".join(((item[5]).split("/"))[:3])
 	info_hash = (item[9].split(":")[3]).split("&")[0]
 	item_xml = "\n\t\t<item>\n\t\t\t<title>" + str(item[8]).split("</a>")[0][1:] + "</title>"
@@ -146,7 +146,7 @@ def item_constructor(item, seeders, leechers, category):
 	item_xml += "\n\t\t\t</torrent>\n\t\t</item>"
 	return item_xml
 
-def xml_constructor(soup):
+def xml_constructor(soup, tpburl):
 	page_type = info[0]
 	if page_type == "search":
 		title = info[1].replace("%20", " ")
@@ -165,19 +165,19 @@ def xml_constructor(soup):
 		seeders = str(str(tables[position + 2]).split(">")[1]).split("<")[0]
 		leechers = str(str(tables[position + 3]).split(">")[1]).split("<")[0]
 		category = ((re.sub(r"(\n|\t)", "", ("".join( BeautifulSoup(str(tables[position])).findAll( text = True ) )))).replace("(", " (")).decode("iso-8859-1").encode("utf8")
-		xml += item_constructor(item, seeders, leechers, category)
+		xml += item_constructor(item, seeders, leechers, category, tpburl)
 		position += 4
 	xml += "\n\t</channel>" + "\n</rss>"
 	return xml
 
 def xml_from_file(filename, keep_pagination_order=True, tpburl=__tpburl__):
 	open_file(filename, keep_pagination_order, tpburl)
-	xml = xml_constructor(soup)
+	xml = xml_constructor(soup, tpburl)
 	return xml
 
 def xml_from_url(search_string, keep_pagination_order=False, tpburl=__tpburl__):
 	open_url(search_string, keep_pagination_order, tpburl)
-	xml = xml_constructor(soup)
+	xml = xml_constructor(soup, tpburl)
 	return xml
 
 def main(parameters):
@@ -191,5 +191,5 @@ def main(parameters):
 		else:
 			print xml
 
-main(sys.argv)
-
+if __name__ == "__main__":
+	main(sys.argv)
