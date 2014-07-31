@@ -22,17 +22,19 @@ import tpb2rss
 Creating a XML from a TPB url:
 
 ```
-tpb2rss.xml_from_url(A, B)
+tpb2rss.xml_from_url(A, B, C)
 ```
 
 Creating a XML from a TPB saved page:
 ```
-tpb2rss.xml_from_file(A, B)
+tpb2rss.xml_from_file(A, B, C)
 ```
 
-- `A`: search term, URL or filename.
+- `A` (required): search term, URL or filename
 
-- `B`: preserve pagination and order info from the URL (`true` or `false`).
+- `B` (optional, `false` by default): preserve pagination and order info from the URL (`true` or `false`)
+
+- `C` (optional, `https://thepiratebay.se` by default): use a mirror (string)
 
 Installing on OpenShift
 -----------------------
