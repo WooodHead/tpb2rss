@@ -1,3 +1,5 @@
+# This file is a part of TPB2RSS (https://github.com/camporez/tpb2rss/)
+
 def build(xml):
 	html = "<!DOCTYPE html>"
 	html += "\n<html lang=\"en\">"

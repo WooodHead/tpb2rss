@@ -1,5 +1,5 @@
 #!/bin/bash
-# This script is a part of the tpb2rss project (https://github.com/camporez/tpb2rss)
+# This file is a part of TPB2RSS (https://github.com/camporez/tpb2rss/)
 
 FILE="$OPENSHIFT_DATA_DIR/searches"
 DIR="$OPENSHIFT_DATA_DIR/raw"
