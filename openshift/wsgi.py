@@ -1,8 +1,6 @@
 # This file is a part of TPB2RSS (https://github.com/camporez/tpb2rss/)
 
 import os
-import datetime
-import urllib2
 import tpb2rss
 import page
 
@@ -19,7 +17,7 @@ def application(environ, start_response):
 	if (( environ["PATH_INFO"] == "") or ( environ["PATH_INFO"] == "/" )):
 		xml = False
 	else:
-		xml = feed_generator(environ['PATH_INFO'])
+		xml = feed_generator(environ["PATH_INFO"])
 	if xml:
 		ctype = "text/xml"
 		response_body = xml
