@@ -105,11 +105,19 @@
 			text-transform: uppercase;
 			text-align: center;
 			border-width: 0;
-			background-color: #243C42;
 			-webkit-border-radius: 0px 5px 5px 0px;
 			-moz-border-radius: 0px 5px 5px 0px;
 			border-radius: 0px 5px 5px 0px;
 			cursor: pointer;
+			transition-duration: .5s;
+		}
+
+		.generate-feed {
+			background-color: #243C42;
+		}
+
+		.open-feed {
+			background-color: #2A2442;
 		}
 
 		#message {
@@ -183,6 +191,7 @@
 			window.open(document.getElementById("search-text").value, "_blank");
 		} else {
 			document.getElementById("search-button").innerHTML = "Open feed";
+			document.getElementById("search-button").className = "open-feed";
 			var url = window.location.protocol + "//" + window.location.host + "/";
 			var input = document.getElementById("search-text").value;
 			var input = input.replace(/^((http)s{0,1}:\/\/(www.){0,1}){0,1}thepiratebay\.[a-z]{1,}\//gi, "");
@@ -202,8 +211,10 @@
 		var input = document.getElementById("search-text").value;
 		if ((input.length > url.length) && (input.substring(0, url.length ) == url)) {
 			document.getElementById("search-button").innerHTML = "Open feed";
+			document.getElementById("search-button").className = "open-feed";
 		} else {
 			document.getElementById("search-button").innerHTML = "Generate";
+			document.getElementById("search-button").className = "generate-feed";
 		};
 	}
 	</script>
@@ -221,7 +232,7 @@
 		<div id="search-box">
 			<form method="post" onsubmit="changetext(); return false;">
 				<input id="search-text" type="text" placeholder="Type a search term or paste a TPB link in here" onkeyup="checkcontent();" autocomplete="off" autofocus required />
-				<button type="submit" id="search-button">Generate</button>
+				<button type="submit" id="search-button" class="generate-feed">Generate</button>
 			</form>
 		</div>
 		<div id="message">Page not found</div>
