@@ -59,11 +59,11 @@ def open_url(search_string, keep_pagination_order, tpburl):
 		try:
 			page = urllib2.urlopen(link)
 		except:
-			print "Couldn't open the URL"
+			print >> sys.stderr, "Couldn't open the URL"
 			exit(1)
 		soup = BeautifulSoup(page.read())
 	else:
-		print "The given string is invalid:", search_string
+		print >> sys.stderr, "The given string is invalid:", search_string
 		exit(1)
 
 def open_file(input_file, keep_pagination_order, tpburl):
@@ -77,7 +77,7 @@ def open_file(input_file, keep_pagination_order, tpburl):
 		info = url_parser(search_string.strip(), keep_pagination_order, tpburl)
 		link = tpburl + "/" + info[0] + "/" + info[1].decode("utf8").encode("iso-8859-1") + info[-1]
 	except:
-		print "The given file is invalid:", input_file
+		print >> sys.stderr, "The given file is invalid:", input_file
 		exit(1)
 	file.close()
 
@@ -87,7 +87,7 @@ def write_file(output_file, content):
 		file.write(content)
 		file.close()
 	except:
-		print "Couldn't write file:", output_file
+		print >> sys.stderr, "Couldn't write file:", output_file
 		exit(1)
 
 def datetime_parser(raw_datetime):
