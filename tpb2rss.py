@@ -191,9 +191,9 @@ def main(parameters):
 			xml = xml_from_file(parameters[1])
 		except IOError:
 			xml = xml_from_url(parameters[1])
-		if len(parameters) >= 3:
+		try:
 			write_file(parameters[2], xml)
-		else:
+		except IndexError:
 			print xml
 
 if __name__ == "__main__":
