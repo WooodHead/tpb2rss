@@ -63,7 +63,7 @@ def open_url(search_string, keep_pagination_order, tpburl):
 			exit(1)
 		soup = BeautifulSoup(page.read())
 	else:
-		print >> sys.stderr, "The given string is invalid:", search_string
+		print >> sys.stderr, "The given URL is invalid:", tpburl + search_string
 		exit(1)
 
 def open_file(input_file, keep_pagination_order, tpburl):
