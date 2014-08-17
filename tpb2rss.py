@@ -50,9 +50,9 @@ def url_parser(search_string, keep_pagination_order, tpburl):
 		return ["search", search_string.decode("iso-8859-1").encode("utf8"), "/0/3/0/"]
 	return None
 
-def open_url(search_string, keep_pagination_order, tpburl):
+def open_url(input_string, keep_pagination_order, tpburl):
 	global soup, info, link
-	search_string = re.sub(r">|<|#|&", "", re.sub(r"^(http(s)?://)?(www.)?" + re.sub(r"^http(s)?://", "", re.sub(r".[a-z]*(:[0-9]*)?$", "", tpburl)) + r".[a-z]*(:[0-9]*)?", "", search_string, flags=re.I))
+	search_string = re.sub(r">|<|#|&", "", re.sub(r"^(http(s)?://)?(www.)?" + re.sub(r"^http(s)?://", "", re.sub(r".[a-z]*(:[0-9]*)?$", "", tpburl)) + r".[a-z]*(:[0-9]*)?", "", input_string, flags=re.I))
 	info = url_parser(search_string.strip(), keep_pagination_order, tpburl)
 	if info:
 		link = tpburl + "/" + info[0] + "/" + info[1].decode("utf8").encode("iso-8859-1") + info[-1]
@@ -63,7 +63,7 @@ def open_url(search_string, keep_pagination_order, tpburl):
 			exit(1)
 		soup = BeautifulSoup(page.read())
 	else:
-		print >> sys.stderr, "The given URL is invalid:", tpburl + search_string
+		print >> sys.stderr, "The given URL is invalid:", input_string
 		exit(1)
 
 def open_file(input_file, keep_pagination_order, tpburl):
@@ -184,12 +184,12 @@ def xml_from_file(filename, keep_pagination_order=True, tpburl=__tpburl__):
 	xml = xml_constructor(soup, tpburl)
 	return xml
 
-def xml_from_url(search_string, keep_pagination_order=False, tpburl=__tpburl__):
+def xml_from_url(input_string, keep_pagination_order=False, tpburl=__tpburl__):
 	try:
-		tpburl = re.search(r"^http(s)?://[\w|\.]+\.[\w|\.]+(:[0-9]+)?/", search_string).group(0)[:-1]
+		tpburl = re.search(r"^http(s)?://[\w|\.]+\.[\w|\.]+(:[0-9]+)?/", input_string).group(0)[:-1]
 	except:
 		pass
-	open_url(search_string, keep_pagination_order, tpburl)
+	open_url(input_string, keep_pagination_order, tpburl)
 	xml = xml_constructor(soup, tpburl)
 	return xml
 
