@@ -134,9 +134,14 @@ def item_constructor(item, seeders, leechers, category, tpburl):
 	item_xml += "\n\t\t\t<pubDate>" + datetime_parser(uploaded.split(" ")[1][:-1]) + " GMT</pubDate>"
 	item_xml += "\n\t\t\t<description><![CDATA[Link: " + tpburl + link + "/"
 	if find_string(item, "piratebaytorrents"):
+	try:
 		item_xml += "<br>Torrent: " + re.sub(r"^//", "https://", str(item[find_string(item, "piratebaytorrents")]))
-	if find_string(item, "Browse "):
+	except:
+		pass
+	try:
 		item_xml += "<br>Uploader: " + str(item[find_string(item, "Browse ")]).replace("Browse ", "")
+	except:
+		pass
 	item_xml += "<br>Category: " + category
 	item_xml += "<br>Size: " + uploaded.split(" ")[3][:-1]
 	item_xml += "<br>Seeders: " + seeders
