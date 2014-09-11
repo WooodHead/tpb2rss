@@ -127,7 +127,8 @@ def find_string(raw_list, word):
 def item_constructor(item, seeders, leechers, category, tpburl):
 	link = "/".join(((item[5]).split("/"))[:3])
 	info_hash = (item[9].split(":")[3]).split("&")[0]
-	item_xml = "\n\t\t<item>\n\t\t\t<title>" + str(item[8]).split("</a>")[0][1:] + "</title>"
+	item_xml = "\n\t\t<item>\n\t\t\t"
+	item_xml += "<title>" + str(item[8]).split("</a>")[0][1:] + "</title>"
 	item_xml += "\n\t\t\t<link><![CDATA[" + item[9] + "]]></link>"
 	uploaded = item[find_string(item, "Uploaded")]
 	item_xml += "\n\t\t\t<pubDate>" + datetime_parser(uploaded.split(" ")[1][:-1]) + " GMT</pubDate>"
