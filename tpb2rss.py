@@ -101,14 +101,14 @@ def datetime_parser(raw_datetime):
 		raw_datetime = str(raw_datetime).replace("Y-day", (datetime.datetime.utcnow() - datetime.timedelta(days=1)).strftime("%a, %d %b %Y"))
 		return raw_datetime + ":00"
 	elif ":" in raw_datetime:
-		weekdays=["Mon","Tue","Wed","Thu","Fri","Sat","Sun"]
+		weekdays=["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"]
 		months={"01":"Jan", "02":"Feb", "03":"Mar", "04":"Apr", "05":"May", "06":"Jun", "07":"Jul", "08":"Aug", "09":"Sep", "10":"Oct", "11":"Nov", "12":"Dec"}
 		raw_datetime = raw_datetime.split("\xc2\xa0")
 		weekday = datetime.date(int(datetime.datetime.utcnow().strftime("%Y")),int(raw_datetime[0].split("-")[0]),int(raw_datetime[0].split("-")[1])).weekday()
 		raw_datetime = raw_datetime[0].split("-")[1] + " " + months[raw_datetime[0].split("-")[0]] + " " + datetime.datetime.utcnow().strftime("%Y") + " " + str(raw_datetime[1])
 		return weekdays[weekday] + ", " + raw_datetime + ":00"
 	else:
-		weekdays=["Mon","Tue","Wed","Thu","Fri","Sat","Sun"]
+		weekdays=["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"]
 		months={"01":"Jan", "02":"Feb", "03":"Mar", "04":"Apr", "05":"May", "06":"Jun", "07":"Jul", "08":"Aug", "09":"Sep", "10":"Oct", "11":"Nov", "12":"Dec"}
 		raw_datetime = raw_datetime.split("\xc2\xa0")
 		weekday = datetime.date(int(raw_datetime[1]),int(raw_datetime[0].split("-")[0]),int(raw_datetime[0].split("-")[1])).weekday()
@@ -132,8 +132,8 @@ def item_constructor(item, seeders, leechers, category, tpburl):
 	item_xml += "\n\t\t\t<link><![CDATA[" + item[9] + "]]></link>"
 	uploaded = item[find_string(item, "Uploaded")]
 	item_xml += "\n\t\t\t<pubDate>" + datetime_parser(uploaded.split(" ")[1][:-1]) + " GMT</pubDate>"
-	item_xml += "\n\t\t\t<description><![CDATA[Link: " + tpburl + link + "/"
-	if find_string(item, "piratebaytorrents"):
+	item_xml += "\n\t\t\t<description><![CDATA["
+	item_xml += "Link: " + tpburl + link + "/"
 	try:
 		item_xml += "<br>Torrent: " + re.sub(r"^//", "https://", str(item[find_string(item, "piratebaytorrents")]))
 	except:
@@ -145,12 +145,14 @@ def item_constructor(item, seeders, leechers, category, tpburl):
 	item_xml += "<br>Category: " + category
 	item_xml += "<br>Size: " + uploaded.split(" ")[3][:-1]
 	item_xml += "<br>Seeders: " + seeders
-	item_xml += "<br>Leechers: " + leechers + "]]></description>"
+	item_xml += "<br>Leechers: " + leechers
+	item_xml += "]]></description>"
 	item_xml += "\n\t\t\t<guid>" + tpburl + link + "/</guid>"
 	item_xml += "\n\t\t\t<torrent xmlns=\"http://xmlns.ezrss.it/0.1/\">"
 	item_xml += "\n\t\t\t\t<infoHash>" + info_hash + "</infoHash>"
 	item_xml += "\n\t\t\t\t<magnetURI><![CDATA[" + item[9] + "]]></magnetURI>"
-	item_xml += "\n\t\t\t</torrent>\n\t\t</item>"
+	item_xml += "\n\t\t\t</torrent>"
+	item_xml += "\n\t\t</item>"
 	return item_xml
 
 def xml_constructor(soup, tpburl):
@@ -164,7 +166,7 @@ def xml_constructor(soup, tpburl):
 	elif ( page_type == "recent" ):
 		title = "Recent Torrents"
 	title = title.decode("utf8").encode("iso-8859-1")
-	xml = "<rss version=\"2.0\">\n\t<channel>\n\t\t"
+	xml = "<rss version=\"2.0\">\n\t" + "<channel>\n\t\t"
 	xml += "<title>TPB2RSS: " + title + "</title>\n\t\t"
 	xml += "<link>" + link + "</link>\n\t\t"
 	xml += "<description>The Pirate Bay " + page_type + " feed for \"" + title + "\"</description>\n\t\t"
