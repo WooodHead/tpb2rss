@@ -135,19 +135,20 @@ def datetime_parser(raw_datetime):
 	# Parses date on the format "Today 23:59"
 	elif "Today" in raw_datetime:
 		raw_datetime = str(raw_datetime).replace("Today", datetime.datetime.utcnow().strftime("%a, %d %b %Y"))
+		raw_datetime = (datetime.datetime.strptime(raw_datetime, "%a, %d %b %Y\xc2\xa0%H:%M") - datetime.timedelta(hours=2)).strftime("%a, %d %b %Y %H:%M")
 		return raw_datetime + ":00"
 	# Parses date on the format "Y-day 23:59"
 	elif "Y-day" in raw_datetime:
 		raw_datetime = str(raw_datetime).replace("Y-day", (datetime.datetime.utcnow() - datetime.timedelta(days=1)).strftime("%a, %d %b %Y"))
+		raw_datetime = (datetime.datetime.strptime(raw_datetime, "%a, %d %b %Y\xc2\xa0%H:%M") - datetime.timedelta(hours=2)).strftime("%a, %d %b %Y %H:%M")
 		return raw_datetime + ":00"
 	# Parses date on the format "12-31 23:59"
 	elif ":" in raw_datetime:
-		weekdays=["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"]
 		months={"01":"Jan", "02":"Feb", "03":"Mar", "04":"Apr", "05":"May", "06":"Jun", "07":"Jul", "08":"Aug", "09":"Sep", "10":"Oct", "11":"Nov", "12":"Dec"}
 		raw_datetime = raw_datetime.split("\xc2\xa0")
-		weekday = datetime.date(int(datetime.datetime.utcnow().strftime("%Y")),int(raw_datetime[0].split("-")[0]),int(raw_datetime[0].split("-")[1])).weekday()
 		raw_datetime = raw_datetime[0].split("-")[1] + " " + months[raw_datetime[0].split("-")[0]] + " " + datetime.datetime.utcnow().strftime("%Y") + " " + str(raw_datetime[1])
-		return weekdays[weekday] + ", " + raw_datetime + ":00"
+		raw_datetime = (datetime.datetime.strptime(raw_datetime, "%d %b %Y %H:%M") - datetime.timedelta(hours=2)).strftime("%a, %d %b %Y %H:%M")
+		return raw_datetime + ":00"
 	# Parses date on the format "12-31 1999"
 	else:
 		weekdays=["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"]
