@@ -32,7 +32,7 @@ tpb2rss.xml_from_file(A, B, C)
 
 - `A` (required): search term, URL or filename
 
-- `B` (optional, `false` by default): preserve pagination and order info from the URL (`true` or `false`)
+- `B` (optional, `True` by default): ignores any info on pagination and ordination from the given URL, forcing it to return the most recent items by upload date (`True` or `False`)
 
 - `C` (optional, `https://thepiratebay.se` by default): set a mirror to use (*string*)
 

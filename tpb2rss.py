@@ -17,7 +17,7 @@ __license__ = "Apache License 2.0"
 # Changing this URL isn't the right way to use a mirror
 __tpburl__  = "https://thepiratebay.se"
 
-def url_parser(search_string, keep_pagination_order, tpburl):
+def url_parser(search_string, force_most_recent, tpburl):
 	# Splits the string (transforms it into a list and removes the empty items)
 	url = filter(None, search_string.split("/"))
 	# Checks if the URL starts with "search", "user" or "browse"
@@ -39,7 +39,7 @@ def url_parser(search_string, keep_pagination_order, tpburl):
 		except:
 			filters = "0"
 		# If pagination and ordination info is being preserved...
-		if keep_pagination_order:
+		if not force_most_recent:
 			# it tries to get these info from the URL
 			try:
 				pag = int(url[-3])
@@ -47,12 +47,12 @@ def url_parser(search_string, keep_pagination_order, tpburl):
 			# If the URL don't have these information, than we tell the program
 			# to ignore it and set "0" as filter
 			except:
-				keep_pagination_order = False
+				force_most_recent = True
 				filters = "0"
 				link = " ".join(url[1:])
 		# If pagination and ordination info isn't being preserved (or the URL don't
 		# specifies it) it sets "0" to pagination and "3" to ordination
-		if not keep_pagination_order:
+		if force_most_recent:
 			pag = 0
 			order = 3
 		return [url[0], link.decode("iso-8859-1").encode("utf8"), "/" + str(pag) + "/" + str(order) + "/" + filters + "/"]
@@ -66,13 +66,13 @@ def url_parser(search_string, keep_pagination_order, tpburl):
 		return ["search", search_string.decode("iso-8859-1").encode("utf8"), "/0/3/0/"]
 	return None
 
-def open_url(input_string, keep_pagination_order, tpburl):
+def open_url(input_string, force_most_recent, tpburl):
 	global soup, info, link
 	# Removes the domain from the input string (if a domain is specified)
 	search_string = re.sub(r">|<|#|&", "", re.sub(r"^(http(s)?://)?(www.)?" + re.sub(r"^http(s)?://", "", re.sub(r".[a-z]*(:[0-9]*)?$", "", tpburl)) + r".[a-z]*(:[0-9]*)?", "", input_string, flags=re.I))
 	# Parses the string and returns a valid URL
 	# (e.g. "/search/Manhattan/0/3/0")
-	info = url_parser(search_string.strip(), keep_pagination_order, tpburl)
+	info = url_parser(search_string.strip(), force_most_recent, tpburl)
 	if info:
 		# Returns a full link for the page
 		link = tpburl + "/" + info[0] + "/" + info[1].decode("utf8").encode("iso-8859-1") + info[-1]
@@ -89,7 +89,7 @@ def open_url(input_string, keep_pagination_order, tpburl):
 		print >> sys.stderr, "The given URL is invalid:", input_string
 		exit(1)
 
-def open_file(input_file, keep_pagination_order, tpburl):
+def open_file(input_file, force_most_recent, tpburl):
 	global soup, info, link
 	# Opens the file and parses it on Beautiful Soup
 	file = open(input_file)
@@ -104,7 +104,7 @@ def open_file(input_file, keep_pagination_order, tpburl):
 		search_string = re.sub(r">|<|#|&", "", re.sub(r"^(http(s)?://)?(www.)?" + re.sub(r"^http(s)?://", "", re.sub(r".[a-z]*(:[0-9]*)?$", "", tpburl)) + r".[a-z]*", "", link, flags=re.I))
 		# Parses the string and returns a valid URL
 		# (e.g. "/search/Manhattan/0/3/0")
-		info = url_parser(search_string.strip(), keep_pagination_order, tpburl)
+		info = url_parser(search_string.strip(), force_most_recent, tpburl)
 		# Returns a full link for the page
 		link = tpburl + "/" + info[0] + "/" + info[1].decode("utf8").encode("iso-8859-1") + info[-1]
 	# If not successful, prints an error and then exits with status 1
@@ -273,21 +273,21 @@ def xml_constructor(soup, tpburl):
 	xml += "\n\t</channel>" + "\n</rss>"
 	return xml
 
-def xml_from_file(filename, keep_pagination_order=True, tpburl=__tpburl__):
+def xml_from_file(filename, force_most_recent=False, tpburl=__tpburl__):
 	# Opens the file, extracts the URL and other things
-	open_file(filename, keep_pagination_order, tpburl)
+	open_file(filename, force_most_recent, tpburl)
 	# Calls the constructor to create the whole XML
 	xml = xml_constructor(soup, tpburl)
 	return xml
 
-def xml_from_url(input_string, keep_pagination_order=False, tpburl=__tpburl__):
+def xml_from_url(input_string, force_most_recent=True, tpburl=__tpburl__):
 	# Checks if the string is an URL so we can extract the domain and use it as a mirror
 	try:
 		tpburl = re.search(r"^http(s)?://[\w|\.]+\.[\w|\.]+(:[0-9]+)?/", input_string).group(0)[:-1]
 	except:
 		pass
 	# Downloads the page and extracts information
-	open_url(input_string, keep_pagination_order, tpburl)
+	open_url(input_string, force_most_recent, tpburl)
 	# Calls the constructor to create the whole XML
 	xml = xml_constructor(soup, tpburl)
 	return xml
