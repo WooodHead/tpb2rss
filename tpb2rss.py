@@ -80,14 +80,20 @@ def open_url(input_string, force_most_recent, tpburl):
 		try:
 			page = urllib2.urlopen(link)
 		# If not successful, prints an error and then exits with status 1
-		except:
-			print >> sys.stderr, "Couldn't open the URL"
-			exit(1)
+		except Exception, err:
+			if exceptions:
+				raise Exception(err)
+			else:
+				print >> sys.stderr, "Couldn't open the URL"
+				exit(1)
 		# Parses the page content on Beautiful Soup
 		soup = BeautifulSoup(page.read())
 	else:
-		print >> sys.stderr, "The given URL is invalid:", input_string
-		exit(1)
+		if exceptions:
+			raise Exception("the given URL is invalid: " + input_string)
+		else:
+			print >> sys.stderr, "The given URL is invalid:", input_string
+			exit(1)
 
 def open_file(input_file, force_most_recent, tpburl):
 	global soup, info, link
@@ -108,9 +114,12 @@ def open_file(input_file, force_most_recent, tpburl):
 		# Returns a full link for the page
 		link = tpburl + "/" + info[0] + "/" + info[1].decode("utf8").encode("iso-8859-1") + info[-1]
 	# If not successful, prints an error and then exits with status 1
-	except:
-		print >> sys.stderr, "The given file is invalid:", input_file
-		exit(1)
+	except Exception, err:
+		if exceptions:
+			raise Exception(err)
+		else:
+			print >> sys.stderr, "The given file is invalid:", input_file
+			exit(1)
 	file.close()
 
 def write_file(output_file, content):
@@ -120,8 +129,8 @@ def write_file(output_file, content):
 		file.write(content)
 		file.close()
 	# If not successful, prints an error and then exits with status 1
-	except:
-		print >> sys.stderr, "Couldn't write file:", output_file
+	except Exception, err:
+		print >> sys.stderr, "Couldn't write file:", str(err)
 		exit(1)
 
 # This function converts the human-readable date (e.g. "7 mins ago",
@@ -310,4 +319,7 @@ def main(parameters):
 
 # If the program is being called from the user, calls the main function
 if __name__ == "__main__":
+	exceptions = False
 	main(sys.argv)
+else:
+	exceptions = True

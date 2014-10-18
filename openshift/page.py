@@ -1,7 +1,9 @@
 # This file is a part of TPB2RSS (https://github.com/camporez/tpb2rss)
 
-def build(xml):
+def build(xml, error):
 	html = "<!DOCTYPE html>"
+	if error:
+		html += "\n<!-- " + error + " -->"
 	html += "\n<html lang=\"en\">"
 	html += "\n<head>"
 	html += "\n\t<meta charset=\"utf-8\" />"
