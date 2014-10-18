@@ -14,7 +14,7 @@ __version__ = "1.1"
 __docs__    = "https://github.com/camporez/tpb2rss/"
 __license__ = "Apache License 2.0"
 
-# Changing this URL isn't the right way to use a mirror
+# Don't change this URL, unless you are absolutely sure about what you're doing
 __tpburl__  = "https://thepiratebay.se"
 
 def url_parser(search_string, force_most_recent, tpburl):
@@ -71,7 +71,7 @@ def open_url(input_string, force_most_recent, tpburl):
 	# Removes the domain from the input string (if a domain is specified)
 	search_string = re.sub(r">|<|#|&", "", re.sub(r"^(http(s)?://)?(www.)?" + re.sub(r"^http(s)?://", "", re.sub(r".[a-z]*(:[0-9]*)?$", "", tpburl)) + r".[a-z]*(:[0-9]*)?", "", input_string, flags=re.I))
 	# Parses the string and returns a valid URL
-	# (e.g. "/search/Manhattan/0/3/0")
+	# (e.g. "/search/Suits/0/3/200")
 	info = url_parser(search_string.strip(), force_most_recent, tpburl)
 	if info:
 		# Returns a full link for the page
@@ -79,7 +79,7 @@ def open_url(input_string, force_most_recent, tpburl):
 		# Tries to open the link
 		try:
 			page = urllib2.urlopen(link)
-		# If not successful, prints an error and then exits with status 1
+		# If not successful, raises an exception or prints an error and then exits with status 1
 		except Exception, err:
 			if exceptions:
 				raise Exception(err)
@@ -90,7 +90,7 @@ def open_url(input_string, force_most_recent, tpburl):
 		soup = BeautifulSoup(page.read())
 	else:
 		if exceptions:
-			raise Exception("the given URL is invalid: " + input_string)
+			raise Exception("The given URL is invalid: " + input_string)
 		else:
 			print >> sys.stderr, "The given URL is invalid:", input_string
 			exit(1)
@@ -113,7 +113,7 @@ def open_file(input_file, force_most_recent, tpburl):
 		info = url_parser(search_string.strip(), force_most_recent, tpburl)
 		# Returns a full link for the page
 		link = tpburl + "/" + info[0] + "/" + info[1].decode("utf8").encode("iso-8859-1") + info[-1]
-	# If not successful, prints an error and then exits with status 1
+	# If not successful, raises an exception or prints an error and then exits with status 1
 	except Exception, err:
 		if exceptions:
 			raise Exception(err)
@@ -317,7 +317,7 @@ def main(parameters):
 		except IndexError:
 			print xml
 
-# If the program is being called from the user, calls the main function
+# If the program is being called from the user, disables exceptions and calls the main function
 if __name__ == "__main__":
 	exceptions = False
 	main(sys.argv)
