@@ -14,8 +14,9 @@ __version__ = "1.1"
 __docs__    = "https://github.com/camporez/tpb2rss/"
 __license__ = "Apache License 2.0"
 
-# Don't change this URL, unless you are absolutely sure about what you're doing
+# Don't change these lines, unless you are absolutely sure about what you're doing
 __tpburl__  = "https://thepiratebay.se"
+__agent__   = "Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/41.0.2227.0 Safari/537.36"
 
 def url_parser(search_string, force_most_recent, tpburl):
 	# Splits the string (transforms it into a list and removes the empty items)
@@ -66,7 +67,7 @@ def url_parser(search_string, force_most_recent, tpburl):
 		return ["search", search_string.decode("iso-8859-1").encode("utf8"), "/0/3/0/"]
 	return None
 
-def open_url(input_string, force_most_recent, tpburl):
+def open_url(input_string, force_most_recent, tpburl, agent):
 	global soup, info, link
 	# Removes the domain from the input string (if a domain is specified)
 	search_string = re.sub(r">|<|#|&", "", re.sub(r"^(http(s)?://)?(www.)?" + re.sub(r"^http(s)?://", "", re.sub(r".[a-z]*(:[0-9]*)?$", "", tpburl)) + r".[a-z]*(:[0-9]*)?", "", input_string, flags=re.I))
@@ -78,7 +79,8 @@ def open_url(input_string, force_most_recent, tpburl):
 		link = tpburl + "/" + info[0] + "/" + info[1].decode("utf8").encode("iso-8859-1") + info[-1]
 		# Tries to open the link
 		try:
-			page = urllib2.urlopen(link)
+			request = urllib2.Request(link, headers={'User-Agent' : agent})
+			page = urllib2.urlopen(request)
 		# If not successful, raises an exception or prints an error and then exits with status 1
 		except Exception, err:
 			if exceptions:
@@ -289,14 +291,14 @@ def xml_from_file(filename, force_most_recent=False, tpburl=__tpburl__):
 	xml = xml_constructor(soup, tpburl)
 	return xml
 
-def xml_from_url(input_string, force_most_recent=True, tpburl=__tpburl__):
+def xml_from_url(input_string, force_most_recent=True, tpburl=__tpburl__, agent=__agent__):
 	# Checks if the string is an URL so we can extract the domain and use it as a mirror
 	try:
 		tpburl = re.search(r"^http(s)?://[\w|\.]+\.[\w|\.]+(:[0-9]+)?/", input_string).group(0)[:-1]
 	except:
 		pass
 	# Downloads the page and extracts information
-	open_url(input_string, force_most_recent, tpburl)
+	open_url(input_string, force_most_recent, tpburl, agent)
 	# Calls the constructor to create the whole XML
 	xml = xml_constructor(soup, tpburl)
 	return xml
