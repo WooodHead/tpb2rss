@@ -13,7 +13,7 @@ Usage
 Calling from another python program
 -----------------------------------
 
-Import the program:
+Import the script:
 
 ```
 import tpb2rss
