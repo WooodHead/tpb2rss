@@ -8,9 +8,9 @@ import datetime
 import urllib2
 
 # Project info
-__author__  = "Ian Camporez Brunelli"
-__email__   = "ian@camporez.com"
-__version__ = "1.1"
+__author__  = "Ian Brunelli"
+__email__   = "ian@brunelli.me"
+__version__ = "1.2"
 __docs__    = "https://github.com/camporez/tpb2rss/"
 __license__ = "Apache License 2.0"
 
