@@ -1,6 +1,6 @@
 # This file is a part of TPB2RSS (https://github.com/camporez/tpb2rss)
 
-def build(xml, error):
+def build(xml, error, status):
 	html = "<!DOCTYPE html>"
 	if error:
 		html += "\n<!-- " + error + " -->"
@@ -241,7 +241,7 @@ def build(xml, error):
 	html += "\n\t\t\t</form>"
 	html += "\n\t\t</div>"
 	if xml == None:
-		html += "\n\t\t<div id=\"message\">Page not found</div>"
+		html += "\n\t\t<div id=\"message\">" + status + "</div>"
 	html += "\n\t</div>"
 	html += "\n\t<div id=\"extensions\">"
 	html += "\n\t\t<span>Bookmarklet: <a href=\"javascript:!function(){if(/^((http)s{0,1}:\/\/(www.){0,1}){0,1}thepiratebay\.[a-z]+\/(search\/(.)+|user\/(.)+|browse\/[0-9]+|recent)+/.test(location.href)){if(/^((http)s{0,1}:\/\/(www.){0,1}){0,1}thepiratebay\.[a-z]+\/browse\/[0-9]+/.test(location.href))var%20t=%22http://rss.thepiratebay.se/%22+window.location.pathname.split(%22/%22)[2];else%20if(/^((http)s{0,1}:\/\/(www.){0,1}){0,1}thepiratebay\.[a-z]+\/user\/(.)+/.test(location.href))var%20t=document.getElementsByClassName(%22rss%22)[0].href;else%20var%20t=document.URL,t=t.replace(/^((http)s{0,1}:\/\/(www.){0,1}){0,1}thepiratebay\.[a-z]{1,}\//gi,%22http://tpb.camporez.com/%22);window.open(t,%22_blank%22)}}();\" class=\"bookmarklet\" alt=\"TPB2RSS\">TPB2RSS</a></span>"

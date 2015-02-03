@@ -68,7 +68,7 @@ def url_parser(search_string, force_most_recent, tpburl):
 	return None
 
 def open_url(input_string, force_most_recent, tpburl, agent):
-	global soup, info, link
+	global soup, info, link, status
 	# Removes the domain from the input string (if a domain is specified)
 	search_string = re.sub(r">|<|#|&", "", re.sub(r"^(http(s)?://)?(www.)?" + re.sub(r"^http(s)?://", "", re.sub(r".[a-z]*(:[0-9]*)?$", "", tpburl)) + r".[a-z]*(:[0-9]*)?", "", input_string, flags=re.I))
 	# Parses the string and returns a valid URL
@@ -81,15 +81,17 @@ def open_url(input_string, force_most_recent, tpburl, agent):
 		try:
 			request = urllib2.Request(link, headers={'User-Agent' : agent})
 			page = urllib2.urlopen(request)
-		# If not successful, raises an exception or prints an error and then exits with status 1
-		except Exception, err:
-			if exceptions:
-				raise Exception(err)
-			else:
-				print >> sys.stderr, "Couldn't open the URL"
-				exit(1)
+			status = "200 OK"
+		# If not successful, returns the error code
+		except urllib2.HTTPError, err:
+			if not exceptions:
+				print >> sys.stderr, err
+			status = str(err.code) + " " + err.reason
 		# Parses the page content on Beautiful Soup
-		soup = BeautifulSoup(page.read())
+		try:
+			soup = BeautifulSoup(page.read())
+		except:
+			soup = None
 	else:
 		if exceptions:
 			raise Exception("The given URL is invalid: " + input_string)
@@ -300,8 +302,11 @@ def xml_from_url(input_string, force_most_recent=True, tpburl=__tpburl__, agent=
 	# Downloads the page and extracts information
 	open_url(input_string, force_most_recent, tpburl, agent)
 	# Calls the constructor to create the whole XML
-	xml = xml_constructor(soup, tpburl)
-	return xml
+	if soup:
+		xml = xml_constructor(soup, tpburl)
+	else:
+		xml = None
+	return [status, xml]
 
 def main(parameters):
 	# Tests if the program is being called with 1 or 2 parameters
@@ -311,13 +316,14 @@ def main(parameters):
 			xml = xml_from_file(parameters[1])
 		# If isn't a file, use it as an URL or string
 		except IOError:
-			xml = xml_from_url(parameters[1])
+			xml = xml_from_url(parameters[1])[1]
 		# Tries to write the XML on a file (2nd parameter)
 		try:
 			write_file(parameters[2], xml)
 		# If no 2nd parameter, the XML is printed to the standart output
 		except IndexError:
-			print xml
+			if xml:
+				print xml
 
 # If the program is being called from the user, disables exceptions and calls the main function
 if __name__ == "__main__":
