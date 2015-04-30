@@ -41,7 +41,7 @@ tpb2rss.xml_from_file(filename)
 Installing on OpenShift
 -----------------------
 
-Read my installation guide [here](http://camporez.com/blog/tpb2rss-openshift)
+Read my installation guide [here](http://brunelli.me/thinny/blog/tpb2rss-openshift)
 
 Dependencies
 ------------

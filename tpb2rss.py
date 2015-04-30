@@ -325,7 +325,7 @@ def main(parameters):
 			if xml:
 				print xml
 
-# If the program is being called from the user, disables exceptions and calls the main function
+# If the program is being called by the user, disables exceptions and calls the main function
 if __name__ == "__main__":
 	exceptions = False
 	main(sys.argv)
