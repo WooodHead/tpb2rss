@@ -1,16 +1,16 @@
-#!/bin/env python2
+#!/bin/env python3
 
 # Imports
 from bs4 import BeautifulSoup
-import sys
-import re
-import datetime
-import urllib2
+from datetime import datetime, timedelta
+from re import I, match, search, sub
+from sys import argv, exc_info, stderr
+from urllib.request import urlopen, Request
 
 # Project info
 __author__  = "Ian Brunelli"
 __email__   = "ian@brunelli.me"
-__version__ = "1.2"
+__version__ = "1.3"
 __docs__    = "https://github.com/camporez/tpb2rss/"
 __license__ = "Apache License 2.0"
 
@@ -20,7 +20,7 @@ __agent__   = "Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like G
 
 def url_parser(search_string, force_most_recent, tpburl):
 	# Splits the string (transforms it into a list and removes the empty items)
-	url = filter(None, search_string.split("/"))
+	url = list(filter(None, search_string.split("/")))
 	# Checks if the URL starts with "search", "user" or "browse"
 	if (( url[0] == "search" ) or ( url[0] == "user" ) or ( url[0] == "browse" )) and ( len(url) > 1 ):
 		# Checks if the URL has pagination and ordination information and
@@ -29,7 +29,7 @@ def url_parser(search_string, force_most_recent, tpburl):
 			url.append("0")
 		try:
 			# Checks if the URL has pagination, ordination and filters information
-			if url[-2].isdigit() and url[-3].isdigit() and re.match(r"^[0-9]+(,[0-9])*$", url[-1]):
+			if url[-2].isdigit() and url[-3].isdigit() and match(r"^[0-9]+(,[0-9])*$", url[-1]):
 				filters = url[-1]
 				link = " ".join(url[1:-3])
 			# If no, sets "0" as filter
@@ -56,36 +56,37 @@ def url_parser(search_string, force_most_recent, tpburl):
 		if force_most_recent:
 			pag = 0
 			order = 3
-		return [url[0], link.decode("iso-8859-1").encode("utf8"), "/" + str(pag) + "/" + str(order) + "/" + filters + "/"]
+		return [url[0], bytes(link, "iso-8859-1"), "/" + str(pag) + "/" + str(order) + "/" + filters + "/"]
 	# Checks if the user is trying to get feed from /recent
 	elif url[0] == "recent":
-		return [url[0], ""]
+		return [url[0], bytes("", "iso-8859-1"), ""]
 	# Checks if the string isn't an URL
-	elif ( len(url) >= 1 ) and ( not re.match(r"^http(s)?://", search_string, flags=re.I) ) and ( not search_string.startswith("/") ):
+	elif ( len(url) >= 1 ) and ( not match(r"^http(s)?://", search_string, flags=I) ) and ( not search_string.startswith("/") ):
 		# Replaces all slashes by spaces
 		search_string = search_string.replace("/", " ")
-		return ["search", search_string.decode("iso-8859-1").encode("utf8"), "/0/3/0/"]
+		return ["search", search_string.encode("utf-8"), "/0/3/0/"]
 	return None
 
 def open_url(input_string, force_most_recent, tpburl, agent):
 	global soup, info, link, status
 	# Removes the domain from the input string (if a domain is specified)
-	search_string = re.sub(r">|<|#|&", "", re.sub(r"^(http(s)?://)?(www.)?" + re.sub(r"^http(s)?://", "", re.sub(r".[a-z]*(:[0-9]*)?$", "", tpburl)) + r".[a-z]*(:[0-9]*)?", "", input_string, flags=re.I))
+	search_string = sub(r">|<|#|&", "", sub(r"^(http(s)?://)?(www.)?" + sub(r"^http(s)?://", "", sub(r".[a-z]*(:[0-9]*)?$", "", tpburl)) + r".[a-z]*(:[0-9]*)?", "", input_string, flags=I))
 	# Parses the string and returns a valid URL
 	# (e.g. "/search/Suits/0/3/200")
 	info = url_parser(search_string.strip(), force_most_recent, tpburl)
 	if info:
 		# Returns a full link for the page
-		link = tpburl + "/" + info[0] + "/" + info[1].decode("utf8").encode("iso-8859-1") + info[-1]
+		link = tpburl + "/" + info[0] + "/" + info[1].decode("iso-8859-1") + info[-1]
 		# Tries to open the link
 		try:
-			request = urllib2.Request(link, headers={'User-Agent' : agent})
-			page = urllib2.urlopen(request)
+			request = Request(link, headers={'User-Agent': agent})
+			page = urlopen(request)
 			status = "200 OK"
 		# If not successful, returns the error code
-		except urllib2.HTTPError, err:
+		except urllib.error.HTTPError:
 			if not exceptions:
-				print >> sys.stderr, err
+				t, e = exc_info()[:2]
+				stderr.write(e + "\n")
 			status = str(err.code) + " " + err.reason
 		# Parses the page content on Beautiful Soup
 		try:
@@ -96,7 +97,7 @@ def open_url(input_string, force_most_recent, tpburl, agent):
 		if exceptions:
 			raise Exception("The given URL is invalid: " + input_string)
 		else:
-			print >> sys.stderr, "The given URL is invalid:", input_string
+			stderr.write("The given URL is invalid: " + input_string + "\n")
 			exit(1)
 
 def open_file(input_file, force_most_recent, tpburl):
@@ -109,20 +110,21 @@ def open_file(input_file, force_most_recent, tpburl):
 		# Gets the canonical link of the page
 		link = str((soup.findAll("link", rel="canonical")[0])).split("\"")[1]
 		# Extracts the mirror used on the page
-		tpburl = re.search(r"^http(s)?://[\w|\.]+\.[\w|\.]+(:[0-9]+)?/", link).group(0)[:-1]
+		tpburl = search(r"^(http(s)?:)?//[\w|\.]+\.[\w|\.]+(:[0-9]+)?/", link).group(0)[:-1]
 		# Extracts the string of the search
-		search_string = re.sub(r">|<|#|&", "", re.sub(r"^(http(s)?://)?(www.)?" + re.sub(r"^http(s)?://", "", re.sub(r".[a-z]*(:[0-9]*)?$", "", tpburl)) + r".[a-z]*", "", link, flags=re.I))
+		search_string = sub(r">|<|#|&", "", sub(r"^(http(s)?://)?(www.)?" + sub(r"^http(s)?://", "", sub(r".[a-z]*(:[0-9]*)?$", "", tpburl)) + r".[a-z]*", "", link, flags=I))
 		# Parses the string and returns a valid URL
 		# (e.g. "/search/Manhattan/0/3/0")
 		info = url_parser(search_string.strip(), force_most_recent, tpburl)
 		# Returns a full link for the page
-		link = tpburl + "/" + info[0] + "/" + info[1].decode("utf8").encode("iso-8859-1") + info[-1]
+		link = tpburl + "/" + info[0] + "/" + info[1].decode("iso-8859-1") + info[-1]
 	# If not successful, raises an exception or prints an error and then exits with status 1
-	except Exception, err:
+	except Exception:
+		t, e = exc_info()[:2]
 		if exceptions:
-			raise Exception(err)
+			raise Exception(e)
 		else:
-			print >> sys.stderr, "The given file is invalid:", input_file
+			stderr.write("The file is invalid: " + str(e) + "\n")
 			exit(1)
 	file.close()
 
@@ -133,8 +135,9 @@ def write_file(output_file, content):
 		file.write(content)
 		file.close()
 	# If not successful, prints an error and then exits with status 1
-	except Exception, err:
-		print >> sys.stderr, "Couldn't write file:", str(err)
+	except Exception:
+		t, e = exc_info()[:2]
+		stderr.write("Couldn't write file: " + e + "\n")
 		exit(1)
 
 # This function converts the human-readable date (e.g. "7 mins ago",
@@ -143,31 +146,31 @@ def write_file(output_file, content):
 def datetime_parser(raw_datetime):
 	# Parses date on the format "1 min ago" and "59 mins ago"
 	if "min" in raw_datetime:
-		raw_datetime = (datetime.datetime.utcnow() - datetime.timedelta(minutes=int(re.sub("[^0-9]", "", raw_datetime)))).strftime("%a, %d %b %Y %H:%M")
+		raw_datetime = (datetime.utcnow() - timedelta(minutes=int(sub("[^0-9]", "", raw_datetime)))).strftime("%a, %d %b %Y %H:%M")
 		return raw_datetime + ":00"
 	# Parses date on the format "Today 23:59"
 	elif "Today" in raw_datetime:
-		raw_datetime = str(raw_datetime).replace("Today", datetime.datetime.utcnow().strftime("%a, %d %b %Y"))
-		raw_datetime = (datetime.datetime.strptime(raw_datetime, "%a, %d %b %Y\xc2\xa0%H:%M") - datetime.timedelta(hours=2)).strftime("%a, %d %b %Y %H:%M")
+		raw_datetime = str(raw_datetime).replace("Today", datetime.utcnow().strftime("%a, %d %b %Y"))
+		raw_datetime = (datetime.strptime(raw_datetime, "%a, %d %b %Y\xa0%H:%M") - timedelta(hours=2)).strftime("%a, %d %b %Y %H:%M")
 		return raw_datetime + ":00"
 	# Parses date on the format "Y-day 23:59"
 	elif "Y-day" in raw_datetime:
-		raw_datetime = str(raw_datetime).replace("Y-day", (datetime.datetime.utcnow() - datetime.timedelta(days=1)).strftime("%a, %d %b %Y"))
-		raw_datetime = (datetime.datetime.strptime(raw_datetime, "%a, %d %b %Y\xc2\xa0%H:%M") - datetime.timedelta(hours=2)).strftime("%a, %d %b %Y %H:%M")
+		raw_datetime = str(raw_datetime).replace("Y-day", (datetime.utcnow() - timedelta(days=1)).strftime("%a, %d %b %Y"))
+		raw_datetime = (datetime.strptime(raw_datetime, "%a, %d %b %Y\xa0%H:%M") - timedelta(hours=2)).strftime("%a, %d %b %Y %H:%M")
 		return raw_datetime + ":00"
 	# Parses date on the format "12-31 23:59"
 	elif ":" in raw_datetime:
 		months={"01":"Jan", "02":"Feb", "03":"Mar", "04":"Apr", "05":"May", "06":"Jun", "07":"Jul", "08":"Aug", "09":"Sep", "10":"Oct", "11":"Nov", "12":"Dec"}
-		raw_datetime = raw_datetime.split("\xc2\xa0")
-		raw_datetime = raw_datetime[0].split("-")[1] + " " + months[raw_datetime[0].split("-")[0]] + " " + datetime.datetime.utcnow().strftime("%Y") + " " + str(raw_datetime[1])
-		raw_datetime = (datetime.datetime.strptime(raw_datetime, "%d %b %Y %H:%M") - datetime.timedelta(hours=2)).strftime("%a, %d %b %Y %H:%M")
+		raw_datetime = raw_datetime.split("\xa0")
+		raw_datetime = raw_datetime[0].split("-")[1] + " " + months[raw_datetime[0].split("-")[0]] + " " + datetime.utcnow().strftime("%Y") + " " + str(raw_datetime[1])
+		raw_datetime = (datetime.strptime(raw_datetime, "%d %b %Y %H:%M") - timedelta(hours=2)).strftime("%a, %d %b %Y %H:%M")
 		return raw_datetime + ":00"
 	# Parses date on the format "12-31 1999"
 	else:
 		weekdays=["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"]
 		months={"01":"Jan", "02":"Feb", "03":"Mar", "04":"Apr", "05":"May", "06":"Jun", "07":"Jul", "08":"Aug", "09":"Sep", "10":"Oct", "11":"Nov", "12":"Dec"}
-		raw_datetime = raw_datetime.split("\xc2\xa0")
-		weekday = datetime.date(int(raw_datetime[1]),int(raw_datetime[0].split("-")[0]),int(raw_datetime[0].split("-")[1])).weekday()
+		raw_datetime = raw_datetime.split("\xa0")
+		weekday = datetime.date(datetime.strptime(raw_datetime[1] + "-" + raw_datetime[0].split("-")[0] + "-" + raw_datetime[0].split("-")[1] , "%Y-%m-%d")).weekday()
 		raw_datetime = raw_datetime[0].split("-")[1] + " " + months[raw_datetime[0].split("-")[0]] + " " + str(raw_datetime[1])
 		return weekdays[weekday] + ", " + raw_datetime + " 00:00:00"
 
@@ -203,7 +206,7 @@ def item_constructor(item, seeders, leechers, category, tpburl):
 	item_xml += "Link: " + tpburl + link + "/"
 	# If a torrent file is available, adds it to the description
 	try:
-		item_xml += "<br>Torrent: " + re.sub(r"^//", "https://", str(item[find_string(item, "piratebaytorrents")]))
+		item_xml += "<br>Torrent: " + sub(r"^//", "https://", str(item[find_string(item, "piratebaytorrents")]))
 	except:
 		pass
 	# If the uploader's name is available, adds it to the description
@@ -239,15 +242,13 @@ def xml_constructor(soup, tpburl):
 	# Gets the page type to set a title
 	page_type = info[0]
 	if page_type == "search":
-		title = info[1].replace("%20", " ")
+		title = info[1].decode("iso-8859-1").replace("%20", " ")
 	elif ( page_type == "browse" ):
 		title = str(" ".join((soup.span.contents[0].split(" "))[1:]))
 	elif ( page_type == "user" ):
-		title = info[1]
+		title = info[1].decode("iso-8859-1")
 	elif ( page_type == "recent" ):
 		title = "Recent Torrents"
-	# Reencodes the title to avoid unacknowledged characters
-	title = title.decode("utf8").encode("iso-8859-1")
 	# RSS header
 	xml = "<rss version=\"2.0\">\n\t" + "<channel>\n\t\t"
 	# Title of the feed
@@ -257,7 +258,7 @@ def xml_constructor(soup, tpburl):
 	# Description of the feed
 	xml += "<description>The Pirate Bay " + page_type + " feed for \"" + title + "\"</description>\n\t\t"
 	# Time of access on the page
-	xml += "<lastBuildDate>" + str(datetime.datetime.utcnow().strftime("%a, %d %b %Y %H:%M:%S")) + " GMT</lastBuildDate>\n\t\t"
+	xml += "<lastBuildDate>" + str(datetime.utcnow().strftime("%a, %d %b %Y %H:%M:%S")) + " GMT</lastBuildDate>\n\t\t"
 	# Language
 	xml += "<language>en-us</language>\n\t\t"
 	# Generator's title and version
@@ -270,7 +271,7 @@ def xml_constructor(soup, tpburl):
 	tables = soup("td")
 	# Generates an entry for each item of the page
 	position = 0
-	for i in range(len(tables) / 4):
+	for i in range(int(len(tables) / 4)):
 		# Gets all the code for an item
 		item = str(tables[position + 1]).split("\"")
 		# Gets the number of seeders
@@ -278,7 +279,7 @@ def xml_constructor(soup, tpburl):
 		# Gets the number of leechers
 		leechers = str(str(tables[position + 3]).split(">")[1]).split("<")[0]
 		# Extracts the category of the item
-		category = ((re.sub(r"(\n|\t)", "", ("".join( BeautifulSoup(str(tables[position])).findAll( text = True ) )))).replace("(", " (")).decode("iso-8859-1").encode("utf8")
+		category = ((sub(r"(\n|\t)", "", ("".join( BeautifulSoup(str(tables[position])).findAll( text = True ) )))).replace("(", " ("))
 		# Calls the item constructor to create the XML for the entry
 		xml += item_constructor(item, seeders, leechers, category, tpburl)
 		position += 4
@@ -296,7 +297,7 @@ def xml_from_file(filename, force_most_recent=False, tpburl=__tpburl__):
 def xml_from_url(input_string, force_most_recent=True, tpburl=__tpburl__, agent=__agent__):
 	# Checks if the string is an URL so we can extract the domain and use it as a mirror
 	try:
-		tpburl = re.search(r"^http(s)?://[\w|\.]+\.[\w|\.]+(:[0-9]+)?/", input_string).group(0)[:-1]
+		tpburl = search(r"^http(s)?://[\w|\.]+\.[\w|\.]+(:[0-9]+)?/", input_string).group(0)[:-1]
 	except:
 		pass
 	# Downloads the page and extracts information
@@ -323,11 +324,11 @@ def main(parameters):
 		# If no 2nd parameter, the XML is printed to the standart output
 		except IndexError:
 			if xml:
-				print xml
+				print(xml)
 
 # If the program is being called by the user, disables exceptions and calls the main function
 if __name__ == "__main__":
 	exceptions = False
-	main(sys.argv)
+	main(argv)
 else:
 	exceptions = True
