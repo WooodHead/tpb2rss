@@ -86,7 +86,7 @@ def open_url(input_string, force_most_recent, tpburl, agent):
 		except urllib.error.HTTPError:
 			if not exceptions:
 				t, e = exc_info()[:2]
-				stderr.write(e + "\n")
+				stderr.write(str(e) + "\n")
 			status = str(err.code) + " " + err.reason
 		# Parses the page content on Beautiful Soup
 		try:
@@ -122,7 +122,7 @@ def open_file(input_file, force_most_recent, tpburl):
 	except Exception:
 		t, e = exc_info()[:2]
 		if exceptions:
-			raise Exception(e)
+			raise Exception(str(e))
 		else:
 			stderr.write("The file is invalid: " + str(e) + "\n")
 			exit(1)
@@ -137,7 +137,7 @@ def write_file(output_file, content):
 	# If not successful, prints an error and then exits with status 1
 	except Exception:
 		t, e = exc_info()[:2]
-		stderr.write("Couldn't write file: " + e + "\n")
+		stderr.write("Couldn't write file: " + str(e) + "\n")
 		exit(1)
 
 # This function converts the human-readable date (e.g. "7 mins ago",
@@ -151,12 +151,12 @@ def datetime_parser(raw_datetime):
 	# Parses date on the format "Today 23:59"
 	elif "Today" in raw_datetime:
 		raw_datetime = str(raw_datetime).replace("Today", datetime.utcnow().strftime("%a, %d %b %Y"))
-		raw_datetime = (datetime.strptime(raw_datetime, "%a, %d %b %Y\xa0%H:%M") - timedelta(hours=2)).strftime("%a, %d %b %Y %H:%M")
+		raw_datetime = (datetime.strptime(raw_datetime, "%a, %d %b %Y %H:%M") - timedelta(hours=2)).strftime("%a, %d %b %Y %H:%M")
 		return raw_datetime + ":00"
 	# Parses date on the format "Y-day 23:59"
 	elif "Y-day" in raw_datetime:
 		raw_datetime = str(raw_datetime).replace("Y-day", (datetime.utcnow() - timedelta(days=1)).strftime("%a, %d %b %Y"))
-		raw_datetime = (datetime.strptime(raw_datetime, "%a, %d %b %Y\xa0%H:%M") - timedelta(hours=2)).strftime("%a, %d %b %Y %H:%M")
+		raw_datetime = (datetime.strptime(raw_datetime, "%a, %d %b %Y %H:%M") - timedelta(hours=2)).strftime("%a, %d %b %Y %H:%M")
 		return raw_datetime + ":00"
 	# Parses date on the format "12-31 23:59"
 	elif ":" in raw_datetime:
@@ -217,7 +217,7 @@ def item_constructor(item, seeders, leechers, category, tpburl):
 	# Adds the category to the description
 	item_xml += "<br>Category: " + category
 	# Adds the size to the description
-	item_xml += "<br>Size: " + uploaded.split(" ")[3][:-1]
+	item_xml += "<br>Size: " + uploaded.split(" ")[3][:-1].replace("\xa0", " ")
 	# Adds the number of seeders to the description
 	item_xml += "<br>Seeders: " + seeders
 	# Adds the number of leechers to the description
@@ -324,7 +324,7 @@ def main(parameters):
 		# If no 2nd parameter, the XML is printed to the standart output
 		except IndexError:
 			if xml:
-				print(xml)
+				print([xml])
 
 # If the program is being called by the user, disables exceptions and calls the main function
 if __name__ == "__main__":
