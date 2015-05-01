@@ -1,6 +1,7 @@
 # This file is a part of TPB2RSS (https://github.com/camporez/tpb2rss/)
 
 import os
+import sys
 import tpb2rss
 import page
 
@@ -9,8 +10,9 @@ def feed_generator(path_info):
 	try:
 		result = tpb2rss.xml_from_url(path_info)
 		return result
-	except Exception, err:
-		error = str(err)
+	except Exception:
+		t, e = exc_info()[:2]
+		error = str(e)
 		return None
 
 def application(environ, start_response):
