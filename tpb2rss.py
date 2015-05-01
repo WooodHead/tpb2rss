@@ -85,8 +85,7 @@ def open_url(input_string, force_most_recent, tpburl, agent):
 		# If not successful, returns the error code
 		except urllib.error.HTTPError:
 			if not exceptions:
-				t, e = exc_info()[:2]
-				stderr.write(str(e) + "\n")
+				stderr.write(str(exc_info()[1]) + "\n")
 			status = str(err.code) + " " + err.reason
 		# Parses the page content on Beautiful Soup
 		try:
@@ -120,11 +119,10 @@ def open_file(input_file, force_most_recent, tpburl):
 		link = tpburl + "/" + info[0] + "/" + info[1].decode("iso-8859-1") + info[-1]
 	# If not successful, raises an exception or prints an error and then exits with status 1
 	except Exception:
-		t, e = exc_info()[:2]
 		if exceptions:
-			raise Exception(str(e))
+			raise Exception(str(exc_info()[1]))
 		else:
-			stderr.write("The file is invalid: " + str(e) + "\n")
+			stderr.write("The file is invalid: " + str(exc_info()[1]) + "\n")
 			exit(1)
 	file.close()
 
@@ -136,8 +134,7 @@ def write_file(output_file, content):
 		file.close()
 	# If not successful, prints an error and then exits with status 1
 	except Exception:
-		t, e = exc_info()[:2]
-		stderr.write("Couldn't write file: " + str(e) + "\n")
+		stderr.write("Couldn't write file: " + str(exc_info()[1]) + "\n")
 		exit(1)
 
 # This function converts the human-readable date (e.g. "7 mins ago",
@@ -324,7 +321,7 @@ def main(parameters):
 		# If no 2nd parameter, the XML is printed to the standart output
 		except IndexError:
 			if xml:
-				print([xml])
+				print(xml)
 
 # If the program is being called by the user, disables exceptions and calls the main function
 if __name__ == "__main__":
