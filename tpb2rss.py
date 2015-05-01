@@ -76,16 +76,17 @@ def open_url(input_string, force_most_recent, tpburl, agent):
 	info = url_parser(search_string.strip(), force_most_recent, tpburl)
 	if info:
 		# Returns a full link for the page
-		link = tpburl + "/" + info[0] + "/" + info[1].decode("iso-8859-1") + info[-1]
+		link = tpburl + "/" + info[0] + "/" + info[1].decode("utf-8").replace(" ", "%20") + info[-1]
 		# Tries to open the link
+		request = Request(link, headers={'User-Agent': agent})
+		page = urlopen(request)
 		try:
-			request = Request(link, headers={'User-Agent': agent})
-			page = urlopen(request)
 			status = "200 OK"
 		# If not successful, returns the error code
-		except urllib.error.HTTPError:
+		except:
 			if not exceptions:
 				stderr.write(str(exc_info()[1]) + "\n")
+			exit()
 			status = str(err.code) + " " + err.reason
 		# Parses the page content on Beautiful Soup
 		try:
@@ -263,7 +264,7 @@ def xml_constructor(soup, tpburl):
 	# Link to our GitHub page
 	xml += "<docs>" + __docs__ + "</docs>\n\t\t"
 	# Author email
-	xml += "<webMaster>" + __email__ + "</webMaster>"
+	xml += "<webMaster>" + __email__ + " (" + __author__ + ")</webMaster>"
 	# Extracts the tables from the HTML
 	tables = soup("td")
 	# Generates an entry for each item of the page
