@@ -2,13 +2,13 @@
 
 import os
 import sys
-import tpb2rss
-import page
+from tpb2rss import Pirate
+from page import build
 
 def feed_generator(path_info):
 	global error
 	try:
-		result = tpb2rss.xml_from_url(path_info)
+		result = Pirate(path_info)
 		return result
 	except Exception:
 		t, e = exc_info()[:2]
@@ -25,8 +25,8 @@ def application(environ, start_response):
 	else:
 		result = feed_generator(environ["PATH_INFO"])
 		try:
-			status = result[0]
-			xml = result[1]
+			status = result.status
+			xml = result.xml
 		except:
 			status = "404 Not Found"
 			xml = None
@@ -35,7 +35,7 @@ def application(environ, start_response):
 		response_body = xml
 	else:
 		ctype = "text/html"
-		response_body = page.build(xml, error, status)
+		response_body = build(xml, error, status)
 
 	response_headers = [("Content-Type", ctype), ("Content-Length", str(len(response_body)))]
 
