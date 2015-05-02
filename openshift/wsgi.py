@@ -10,9 +10,8 @@ def feed_generator(path_info):
 	try:
 		result = Pirate(path_info)
 		return result
-	except Exception:
-		t, e = exc_info()[:2]
-		error = str(e)
+	except:
+		error = str(sys.exc_info()[1])
 		return None
 
 def application(environ, start_response):
