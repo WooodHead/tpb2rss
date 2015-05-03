@@ -1,22 +1,53 @@
 #!/bin/env python3
 
 # Imports
-from bs4 import BeautifulSoup
 from datetime import datetime, timedelta
-from re import I, match, search, sub
+from html import parser
+from re import compile, I, match, search, sub
 from sys import argv, exc_info, stderr
 from urllib import error, parse, request
 
 # Project info
 __author__  = "Ian Brunelli"
 __email__   = "ian@brunelli.me"
-__version__ = "1.3"
-__docs__    = "https://github.com/ianbrunelli/tpb2rss/"
+__version__ = "2.0"
+__docs__    = "https://github.com/camporez/tpb2rss/"
 __license__ = "Apache License 2.0"
 
 # Don't change these lines
 __tpburl__  = "https://thepiratebay.se"
 __agent__   = "Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/41.0.2227.0 Safari/537.36"
+
+class PageParser(parser.HTMLParser):
+	def __init__(self, html):
+		parser.HTMLParser.__init__(self)
+		self.in_td = False
+		self.data = []
+		self.feed(html)
+
+	def handle_starttag(self, tag, attrs):
+		if tag == "td" and not self.in_td:
+			self.in_td = True
+			self.data.append("<" + tag)
+			for attr in attrs:
+				self.data[-1] += " " + attr[0] + "=\"" + attr[1] + "\""
+			self.data[-1] += ">"
+		elif self.in_td:
+			self.data[-1] += "<" + tag
+			for attr in attrs:
+				self.data[-1] += " " + attr[0] + "=\"" + attr[1] + "\""
+			self.data[-1] += ">"
+
+	def handle_data(self, data):
+		if self.in_td:
+			self.data[-1] += data
+
+	def handle_endtag(self, tag):
+		if tag == "td":
+			self.data[-1] += "</" + tag + ">"
+			self.in_td = False
+		elif self.in_td:
+			self.data[-1] += "</" + tag + ">"
 
 class Pirate(object):
 	def __init__(self, input_string):
@@ -27,12 +58,15 @@ class Pirate(object):
 			tpburl = search(r"^http(s)?://[\w|\.]+\.[\w|\.]+(:[0-9]+)?/", input_string).group(0)[:-1]
 		except:
 			pass
-		info = self.parse_url(input_string.strip(), force_most_recent, tpburl)
+		search_string = sub(r">|<|#|&", "", sub(r"^(http(s)?://)?(www.)?" + sub(r"^http(s)?://", "", sub(r".[a-z]*(:[0-9]*)?$", "", tpburl)) + r".[a-z]*(:[0-9]*)?", "", input_string, flags=I))
+		info = self.parse_url(search_string.strip(), force_most_recent, tpburl)
 		if info:
-			link = tpburl + "/" + info[0] + "/" + parse.quote(info[1].decode("utf-8")) + info[-1]
-			page = self.get_page(link, agent).read()
+			link = tpburl + "/" + info[0] + "/" + parse.quote(info[1].decode("UTF-8")) + info[-1]
+			print(link)
+			exit()
+			page = self.get_page(link, agent)
 			try:
-				soup = BeautifulSoup(page.decode("utf-8"))
+				soup = page.read().decode("UTF-8")
 			except:
 				soup = None
 			if soup:
@@ -67,12 +101,12 @@ class Pirate(object):
 			if force_most_recent:
 				pag = 0
 				order = 3
-			return [url[0], bytes(link, "utf-8"), "/" + str(pag) + "/" + str(order) + "/" + filters + "/"]
+			return [url[0], bytes(link, "UTF-8"), "/" + str(pag) + "/" + str(order) + "/" + filters + "/"]
 		elif url[0] == "recent":
-			return [url[0], bytes("", "utf-8"), ""]
+			return [url[0], bytes("", "UTF-8"), ""]
 		elif ( len(url) >= 1 ) and ( not match(r"^http(s)?://", search_string, flags=I) ) and ( not search_string.startswith("/") ):
 			search_string = search_string.replace("/", " ")
-			return ["search", bytes(search_string, "utf-8"), "/0/3/0/"]
+			return ["search", bytes(search_string, "UTF-8"), "/0/3/0/"]
 		return None
 
 	def get_page(self, link, agent):
@@ -121,13 +155,13 @@ class Pirate(object):
 			return None
 
 	def item_constructor(self, item, seeders, leechers, category, tpburl):
-		link = "/".join(((item[5]).split("/"))[:3])
+		link = "/".join(((item[3]).split("/"))[:3])
 		info_hash = (item[9].split(":")[3]).split("&")[0]
 		item_xml = "\n\t\t<item>\n\t\t\t"
 		item_xml += "<title>" + str(item[8]).split("</a>")[0][1:] + "</title>"
 		item_xml += "\n\t\t\t<link><![CDATA[" + item[9] + "]]></link>"
 		uploaded = item[self.find_string(item, "Uploaded")]
-		item_xml += "\n\t\t\t<pubDate>" + self.datetime_parser(uploaded.split(" ")[1][:-1]) + " GMT</pubDate>"
+		item_xml += "\n\t\t\t<pubDate>" + self.datetime_parser(" ".join(uploaded.split(",")[0].split(" ")[1:])) + " GMT</pubDate>"
 		item_xml += "\n\t\t\t<description><![CDATA["
 		item_xml += "Link: " + tpburl + link + "/"
 		try:
@@ -139,7 +173,7 @@ class Pirate(object):
 		except:
 			pass
 		item_xml += "<br>Category: " + category
-		item_xml += "<br>Size: " + uploaded.split(" ")[3][:-1].replace("\xa0", " ")
+		item_xml += "<br>Size: " + uploaded.split(" ")[3][:-1].replace(" ", " ")
 		item_xml += "<br>Seeders: " + seeders
 		item_xml += "<br>Leechers: " + leechers
 		item_xml += "]]></description>"
@@ -154,11 +188,14 @@ class Pirate(object):
 	def xml_constructor(self, soup, link, tpburl, info):
 		page_type = info[0]
 		if page_type == "search":
-			title = info[1].decode("utf-8")
+			title = info[1].decode("UTF-8")
 		elif ( page_type == "browse" ):
-			title = str(" ".join((soup.span.contents[0].split(" "))[1:]))
+			try:
+				title = parser.HTMLParser().unescape(search('<title>(.*) - TPB</title>', soup).group(1))
+			except:
+				title = info[1].decode("UTF-8")
 		elif ( page_type == "user" ):
-			title = info[1].decode("utf-8")
+			title = info[1].decode("UTF-8")
 		elif ( page_type == "recent" ):
 			title = "Recent Torrents"
 		xml = "<rss version=\"2.0\">\n\t" + "<channel>\n\t\t"
@@ -170,13 +207,13 @@ class Pirate(object):
 		xml += "<generator>TPB2RSS " + __version__ + "</generator>\n\t\t"
 		xml += "<docs>" + __docs__ + "</docs>\n\t\t"
 		xml += "<webMaster>" + __email__ + " (" + __author__ + ")</webMaster>"
-		tables = soup("td")
+		tables = PageParser(parser.HTMLParser().unescape(soup))
 		position = 0
-		for i in range(int(len(tables) / 4)):
-			item = str(tables[position + 1]).split("\"")
-			seeders = str(str(tables[position + 2]).split(">")[1]).split("<")[0]
-			leechers = str(str(tables[position + 3]).split(">")[1]).split("<")[0]
-			category = ((sub(r"(\n|\t)", "", ("".join( BeautifulSoup(str(tables[position])).findAll( text = True ) )))).replace("(", " ("))
+		for i in range(int(len(tables.data) / 4)):
+			item = str(tables.data[position + 1]).split("\"")
+			seeders = str(str(tables.data[position + 2]).split(">")[1]).split("<")[0]
+			leechers = str(str(tables.data[position + 3]).split(">")[1]).split("<")[0]
+			category = sub(r"(\n|\t)", "", (compile(r'<.*?>').sub('', tables.data[0]).replace("(", " (")))
 			xml += self.item_constructor(item, seeders, leechers, category, tpburl)
 			position += 4
 		xml += "\n\t</channel>" + "\n</rss>"
