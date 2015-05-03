@@ -49,6 +49,12 @@ class PageParser(parser.HTMLParser):
 		elif self.in_td:
 			self.data[-1] += "</" + tag + ">"
 
+	def handle_charref(self, ref):
+		self.handle_entityref("#" + ref)
+
+	def handle_entityref(self, ref):
+		self.handle_data(self.unescape("&%s;" % ref))
+
 class Pirate(object):
 	def __init__(self, input_string):
 		self.get_feed(input_string)
@@ -62,8 +68,6 @@ class Pirate(object):
 		info = self.parse_url(search_string.strip(), force_most_recent, tpburl)
 		if info:
 			link = tpburl + "/" + info[0] + "/" + parse.quote(info[1].decode("UTF-8")) + info[-1]
-			print(link)
-			exit()
 			page = self.get_page(link, agent)
 			try:
 				soup = page.read().decode("UTF-8")
@@ -207,7 +211,7 @@ class Pirate(object):
 		xml += "<generator>TPB2RSS " + __version__ + "</generator>\n\t\t"
 		xml += "<docs>" + __docs__ + "</docs>\n\t\t"
 		xml += "<webMaster>" + __email__ + " (" + __author__ + ")</webMaster>"
-		tables = PageParser(parser.HTMLParser().unescape(soup))
+		tables = PageParser(soup)
 		position = 0
 		for i in range(int(len(tables.data) / 4)):
 			item = str(tables.data[position + 1]).split("\"")
