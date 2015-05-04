@@ -37,6 +37,8 @@ class PageParser(parser.HTMLParser):
 			for attr in attrs:
 				self.data[-1] += " " + attr[0] + "=\"" + attr[1] + "\""
 			self.data[-1] += ">"
+		elif tag == "input" and attrs[0][1] == "search":
+			self.title = attrs[5][1]
 
 	def handle_data(self, data):
 		if self.in_td:
@@ -53,9 +55,7 @@ class PageParser(parser.HTMLParser):
 		self.handle_entityref("#" + ref)
 
 	def handle_entityref(self, ref):
-		if ref == "nbsp":
-			char = " "
-		elif ref in ["quote", "amp", "apos", "lt", "gt"]:
+		if ref in ["quote", "amp", "apos", "lt", "gt"]:
 			char = "&%s;" % ref
 		else:
 			char = self.unescape("&%s;" % ref)
@@ -73,8 +73,8 @@ class Pirate(object):
 		search_string = sub(r">|<|#|&", "", sub(r"^(http(s)?://)?(www.)?" + sub(r"^http(s)?://", "", sub(r".[a-z]*(:[0-9]*)?$", "", tpburl)) + r".[a-z]*(:[0-9]*)?", "", input_string, flags=I))
 		info = self.parse_url(search_string.strip(), force_most_recent, tpburl)
 		if info:
-			link = tpburl + "/" + info[0] + "/" + parse.quote(info[1]) + info[-1]
-			page = self.get_page(link, agent)
+			link = "/" + info[0] + "/" + info[1] + info[-1]
+			page = self.get_page(tpburl, link, agent)
 			try:
 				soup = page.read().decode("UTF-8")
 			except:
@@ -119,9 +119,9 @@ class Pirate(object):
 			return ["search", search_string, "/0/3/0/"]
 		return None
 
-	def get_page(self, link, agent):
+	def get_page(self, tpburl, link, agent):
 		try:
-			req = request.Request(link, headers={'User-Agent': __agent__})
+			req = request.Request(tpburl + parse.quote(link), headers={'User-Agent': __agent__})
 			page = request.urlopen(req)
 			self.status = "200 OK"
 			return page
@@ -143,14 +143,14 @@ class Pirate(object):
 			return raw_datetime + ":00"
 		elif ":" in raw_datetime:
 			months={"01":"Jan", "02":"Feb", "03":"Mar", "04":"Apr", "05":"May", "06":"Jun", "07":"Jul", "08":"Aug", "09":"Sep", "10":"Oct", "11":"Nov", "12":"Dec"}
-			raw_datetime = raw_datetime.split(" ")
+			raw_datetime = raw_datetime.split("\xa0")
 			raw_datetime = raw_datetime[0].split("-")[1] + " " + months[raw_datetime[0].split("-")[0]] + " " + datetime.utcnow().strftime("%Y") + " " + str(raw_datetime[1])
 			raw_datetime = (datetime.strptime(raw_datetime, "%d %b %Y %H:%M") - timedelta(hours=2)).strftime("%a, %d %b %Y %H:%M")
 			return raw_datetime + ":00"
 		else:
 			weekdays=["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"]
 			months={"01":"Jan", "02":"Feb", "03":"Mar", "04":"Apr", "05":"May", "06":"Jun", "07":"Jul", "08":"Aug", "09":"Sep", "10":"Oct", "11":"Nov", "12":"Dec"}
-			raw_datetime = raw_datetime.split(" ")
+			raw_datetime = raw_datetime.split("\xa0")
 			weekday = datetime.date(datetime.strptime(raw_datetime[1] + "-" + raw_datetime[0].split("-")[0] + "-" + raw_datetime[0].split("-")[1] , "%Y-%m-%d")).weekday()
 			raw_datetime = raw_datetime[0].split("-")[1] + " " + months[raw_datetime[0].split("-")[0]] + " " + str(raw_datetime[1])
 			return weekdays[weekday] + ", " + raw_datetime + " 00:00:00"
@@ -198,8 +198,12 @@ class Pirate(object):
 
 	def xml_constructor(self, soup, link, tpburl, info):
 		page_type = info[0]
+		tables = PageParser(soup)
 		if page_type == "search":
-			title = info[1]
+			try:
+				title = tables.title
+			except:
+				title = info[1]
 		elif page_type in ["browse", "user"]:
 			try:
 				title = parser.HTMLParser().unescape(search('<title>(.*) - TPB</title>', soup).group(1))
@@ -209,14 +213,13 @@ class Pirate(object):
 			title = "Recent Torrents"
 		xml = "<rss version=\"2.0\">\n\t" + "<channel>\n\t\t"
 		xml += "<title>TPB2RSS: " + title + "</title>\n\t\t"
-		xml += "<link>" + link + "</link>\n\t\t"
+		xml += "<link>" + tpburl + parse.quote(link) + "</link>\n\t\t"
 		xml += "<description>The Pirate Bay " + page_type + " feed for \"" + title + "\"</description>\n\t\t"
 		xml += "<lastBuildDate>" + str(datetime.utcnow().strftime("%a, %d %b %Y %H:%M:%S")) + " GMT</lastBuildDate>\n\t\t"
 		xml += "<language>en-us</language>\n\t\t"
 		xml += "<generator>TPB2RSS " + __version__ + "</generator>\n\t\t"
 		xml += "<docs>" + __docs__ + "</docs>\n\t\t"
 		xml += "<webMaster>" + __email__ + " (" + __author__ + ")</webMaster>"
-		tables = PageParser(soup)
 		position = 0
 		for i in range(int(len(tables.data) / 4)):
 			item = str(tables.data[position + 1]).split("\"")
