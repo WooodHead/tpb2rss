@@ -124,11 +124,15 @@ class ThePirateFeed(object):
 		try:
 			req = request.Request(tpburl + parse.quote(link), headers={'User-Agent': __agent__})
 			page = request.urlopen(req)
-			self.status = "200 OK"
-			return page
 		except error.HTTPError:
-			self.status = str(exc_info()[1].code) + " " + exc_info()[1].reason
+			self.status = exc_info()[1]
 			return None
+		else:
+			class DefaultStatus:
+				code = 200
+				reason = "OK"
+			self.status = DefaultStatus()
+			return page
 
 	def datetime_parser(self, raw_datetime):
 		if "min" in raw_datetime:
@@ -236,5 +240,5 @@ if __name__ == "__main__" and len(argv) > 1:
 	if result.xml:
 		print(result.xml)
 	elif result.status:
-		stderr.write("Failed to get feed. HTTP code: %s.\n" % result.status)
+		stderr.write("Failed to get feed. HTTP code: %s %s.\n" % (str(result.status.code), result.status.reason))
 		exit(2)

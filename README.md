@@ -13,17 +13,13 @@ Usage
 Calling from another python program
 -----------------------------------
 
-Import the script:
-
 ```
 from tpb2rss import ThePirateFeed
+
+feed = ThePirateFeed(input_string, force_most_recent, tpburl, agent)
 ```
 
-Creating a XML from a TPB url:
-
-```
-ThePirateFeed(input_string, force_most_recent, tpburl, agent)
-```
+Input:
 
 - `input_string` (required): search term or URL (*string*)
 
@@ -33,6 +29,14 @@ ThePirateFeed(input_string, force_most_recent, tpburl, agent)
 
 - `agent` (optional, `Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/41.0.2227.0 Safari/537.36` by default): set an User Agent when downloading the page (*string*)
 
+Output:
+
+- `feed.xml` (str)
+
+- `feed.status.code` (int)
+
+- `feed.status.reason` (str)
+
 Installing on OpenShift
 -----------------------
 
@@ -41,20 +45,22 @@ Installing on OpenShift
 2. Clone the application you created.
 
 3. Clone this repository inside your application's repo.
-```
-git clone https://github.com/camporez/tpb2rss.git tpb2rss
-```
+	```
+	git clone https://github.com/camporez/tpb2rss.git tpb2rss
+	```
 
 4. Move the required files to the root of your application's repo.
-```
-mv tpb2rss/*.py .
-rm -rf tpb2rss
-```
+	```
+	mv tpb2rss/*.py .
+	rm -rf tpb2rss
+	```
 
 5. Commit and push your changes.
-```
-git add .; git commit -m "Installing TPB2RSS."; git push
-```
+	```
+	git add .
+	git commit -m "Installing TPB2RSS."
+	git push
+	```
 
 Dependencies
 ------------
