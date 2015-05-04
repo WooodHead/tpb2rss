@@ -1,16 +1,17 @@
 # This file is a part of TPB2RSS (https://github.com/camporez/tpb2rss/)
 
 import os
-import tpb2rss
-import page
+import sys
+from tpb2rss import ThePirateFeed
+from page import build
 
 def feed_generator(path_info):
 	global error
 	try:
-		result = tpb2rss.xml_from_url(path_info)
+		result = ThePirateFeed(path_info)
 		return result
-	except Exception, err:
-		error = str(err)
+	except:
+		error = str(sys.exc_info()[1])
 		return None
 
 def application(environ, start_response):
@@ -21,21 +22,21 @@ def application(environ, start_response):
 	if (( environ["PATH_INFO"] == "") or ( environ["PATH_INFO"] == "/" )):
 		xml = False
 	else:
-		result = feed_generator(environ["PATH_INFO"])
+		result = feed_generator(environ["PATH_INFO"].encode("iso-8859-1").decode("utf-8"))
 		try:
-			status = result[0]
-			xml = result[1]
+			status = result.status
+			xml = result.xml
 		except:
 			status = "404 Not Found"
 			xml = None
 	if xml:
-		ctype = "text/xml"
+		ctype = "text/xml; charset=UTF-8"
 		response_body = xml
 	else:
-		ctype = "text/html"
-		response_body = page.build(xml, error, status)
+		ctype = "text/html; charset=UTF-8"
+		response_body = build(xml, error, status)
 
-	response_headers = [("Content-Type", ctype), ("Content-Length", str(len(response_body)))]
+	response_headers = [("Content-Type", ctype), ("Content-Length", str(len(response_body.encode("UTF-8"))))]
 
 	start_response(status, response_headers)
-	return [response_body]
+	return [response_body.encode("UTF-8")]
