@@ -55,7 +55,7 @@ class HTMLParser(parser.HTMLParser):
 		self.handle_entityref("#" + ref)
 
 	def handle_entityref(self, ref):
-		if ref in ["quote", "amp", "apos", "lt", "gt"]:
+		if ref in ["amp", "apos", "gt", "lt", "quote"]:
 			char = "&%s;" % ref
 		else:
 			char = self.unescape("&%s;" % ref)
