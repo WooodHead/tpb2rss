@@ -1,13 +1,13 @@
 TPB2RSS
 =======
 
-A python script to generate a RSS feed from a thepiratebay.se search
+A python script to generate a RSS feed from a The Pirate Bay search
 
 Usage
 -----
 
 ```
-./tpb2rss.py ( INPUT_FILE | TPB_URL | SEARCH_TERM ) [ OUTPUT_FILE ]
+./tpb2rss.py ( TPB_URL | SEARCH_TERM ) [ OUTPUT_FILE ]
 ```
 
 Calling from another python program
@@ -16,13 +16,13 @@ Calling from another python program
 Import the script:
 
 ```
-import tpb2rss
+from tpb2rss import Pirate
 ```
 
 Creating a XML from a TPB url:
 
 ```
-tpb2rss.xml_from_url(input_string, force_most_recent, tpburl, agent)
+Pirate(input_string, force_most_recent, tpburl, agent)
 ```
 
 - `input_string` (required): search term or URL (*string*)
@@ -46,10 +46,7 @@ Read my installation guide [here](http://brunelli.me/thinny/blog/tpb2rss-openshi
 Dependencies
 ------------
 
-- [Python 2](http://docs.python.org/2/)
-- [Beautiful Soup 4](http://www.crummy.com/software/BeautifulSoup/)
-- [urllib2](https://docs.python.org/2/library/urllib2.html) library (default in Python 2.x)
-- [datetime](https://docs.python.org/2/library/datetime.html) library (default in Python 2.x)
+[Python >= 3.3](http://docs.python.org/3/)
 
 License
 -------
