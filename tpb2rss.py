@@ -2,15 +2,15 @@
 
 # Imports
 from datetime import datetime, timedelta
-from html import parser
-from re import compile, I, match, search, sub
-from sys import argv, exc_info, stderr
-from urllib import error, parse, request
+from html     import parser
+from re       import compile, I, match, search, sub
+from sys      import argv, exc_info, stderr
+from urllib   import error, parse, request
 
 # Project info
 __author__  = "Ian Brunelli"
 __email__   = "ian@brunelli.me"
-__version__ = "2.0"
+__version__ = "2.0 beta"
 __docs__    = "https://github.com/camporez/tpb2rss/"
 __license__ = "Apache License 2.0"
 
@@ -18,7 +18,7 @@ __license__ = "Apache License 2.0"
 __tpburl__  = "https://thepiratebay.se"
 __agent__   = "Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/41.0.2227.0 Safari/537.36"
 
-class PageParser(parser.HTMLParser):
+class HTMLParser(parser.HTMLParser):
 	def __init__(self, html):
 		parser.HTMLParser.__init__(self)
 		self.in_td = False
@@ -61,7 +61,7 @@ class PageParser(parser.HTMLParser):
 			char = self.unescape("&%s;" % ref)
 		self.handle_data(char)
 
-class Pirate(object):
+class ThePirateFeed(object):
 	def __init__(self, input_string):
 		self.get_feed(input_string)
 
@@ -85,6 +85,7 @@ class Pirate(object):
 				self.xml = None
 		else:
 			raise ValueError("The given URL is invalid: " + input_string)
+			exit(1)
 
 	def parse_url(self, search_string, force_most_recent, tpburl):
 		url = list(filter(None, search_string.split("/")))
@@ -197,43 +198,43 @@ class Pirate(object):
 		return item_xml
 
 	def xml_constructor(self, soup, link, tpburl, info):
-		page_type = info[0]
-		tables = PageParser(soup)
-		if page_type == "search":
+		page = HTMLParser(soup)
+		if info[0] == "search":
 			try:
-				title = tables.title
+				title = page.title
 			except:
 				title = info[1]
-		elif page_type in ["browse", "user"]:
+		elif info[0] in ["browse", "user"]:
 			try:
 				title = parser.HTMLParser().unescape(search('<title>(.*) - TPB</title>', soup).group(1))
 			except:
 				title = info[1]
-		elif ( page_type == "recent" ):
+		elif info[0] == "recent":
 			title = "Recent Torrents"
 		xml = "<rss version=\"2.0\">\n\t" + "<channel>\n\t\t"
 		xml += "<title>TPB2RSS: " + title + "</title>\n\t\t"
 		xml += "<link>" + tpburl + parse.quote(link) + "</link>\n\t\t"
-		xml += "<description>The Pirate Bay " + page_type + " feed for \"" + title + "\"</description>\n\t\t"
+		xml += "<description>The Pirate Bay " + info[0] + " feed for \"" + title + "\"</description>\n\t\t"
 		xml += "<lastBuildDate>" + str(datetime.utcnow().strftime("%a, %d %b %Y %H:%M:%S")) + " GMT</lastBuildDate>\n\t\t"
 		xml += "<language>en-us</language>\n\t\t"
 		xml += "<generator>TPB2RSS " + __version__ + "</generator>\n\t\t"
 		xml += "<docs>" + __docs__ + "</docs>\n\t\t"
 		xml += "<webMaster>" + __email__ + " (" + __author__ + ")</webMaster>"
 		position = 0
-		for i in range(int(len(tables.data) / 4)):
-			item = str(tables.data[position + 1]).split("\"")
-			seeders = str(str(tables.data[position + 2]).split(">")[1]).split("<")[0]
-			leechers = str(str(tables.data[position + 3]).split(">")[1]).split("<")[0]
-			category = sub(r"(\n|\t)", "", (compile(r'<.*?>').sub('', tables.data[0]).replace("(", " (")))
+		for i in range(int(len(page.data) / 4)):
+			item = str(page.data[position + 1]).split("\"")
+			seeders = str(str(page.data[position + 2]).split(">")[1]).split("<")[0]
+			leechers = str(str(page.data[position + 3]).split(">")[1]).split("<")[0]
+			category = sub(r"(\n|\t)", "", (compile(r'<.*?>').sub('', page.data[0]).replace("(", " (")))
 			xml += self.item_constructor(item, seeders, leechers, category, tpburl)
 			position += 4
 		xml += "\n\t</channel>" + "\n</rss>"
 		return xml
 
 if __name__ == "__main__" and len(argv) > 1:
-	result = Pirate(" ".join(argv[1:]))
+	result = ThePirateFeed(" ".join(argv[1:]))
 	if result.xml:
 		print(result.xml)
 	elif result.status:
-		stderr.write(result.status)
+		stderr.write("Failed to get feed. HTTP code: %s.\n" % result.status)
+		exit(2)

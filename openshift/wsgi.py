@@ -2,13 +2,13 @@
 
 import os
 import sys
-from tpb2rss import Pirate
+from tpb2rss import ThePirateFeed
 from page import build
 
 def feed_generator(path_info):
 	global error
 	try:
-		result = Pirate(path_info)
+		result = ThePirateFeed(path_info)
 		return result
 	except:
 		error = str(sys.exc_info()[1])

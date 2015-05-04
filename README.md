@@ -16,13 +16,13 @@ Calling from another python program
 Import the script:
 
 ```
-from tpb2rss import Pirate
+from tpb2rss import ThePirateFeed
 ```
 
 Creating a XML from a TPB url:
 
 ```
-Pirate(input_string, force_most_recent, tpburl, agent)
+ThePirateFeed(input_string, force_most_recent, tpburl, agent)
 ```
 
 - `input_string` (required): search term or URL (*string*)
@@ -32,11 +32,6 @@ Pirate(input_string, force_most_recent, tpburl, agent)
 - `tpburl` (optional, `https://thepiratebay.se` by default): set a mirror to use (*string*)
 
 - `agent` (optional, `Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/41.0.2227.0 Safari/537.36` by default): set an User Agent when downloading the page (*string*)
-
-Creating a XML from a TPB saved page:
-```
-tpb2rss.xml_from_file(filename)
-```
 
 Installing on OpenShift
 -----------------------
