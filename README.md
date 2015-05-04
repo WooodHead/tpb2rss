@@ -36,7 +36,18 @@ ThePirateFeed(input_string, force_most_recent, tpburl, agent)
 Installing on OpenShift
 -----------------------
 
-Read my installation guide [here](http://brunelli.me/thinny/blog/tpb2rss-openshift)
+1. Create a [`Python 3.3` application](https://openshift.redhat.com/app/console/application_type/cart!python-3.3)
+
+2. Clone the application you created.
+
+3. Clone this repository inside your application's repo.
+`git clone https://github.com/camporez/tpb2rss.git tpb2rss`
+
+4. Move the required files to the root of your application's repo.
+`mv tpb2rss/*.py .; rm -rf tpb2rss`
+
+5. Commit and push your changes.
+`git add .; git commit -m "Installing TPB2RSS."; git push`
 
 Dependencies
 ------------
