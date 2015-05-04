@@ -53,7 +53,13 @@ class PageParser(parser.HTMLParser):
 		self.handle_entityref("#" + ref)
 
 	def handle_entityref(self, ref):
-		self.handle_data(self.unescape("&%s;" % ref))
+		if ref == "nbsp":
+			char = " "
+		elif ref in ["quote", "amp", "apos", "lt", "gt"]:
+			char = "&%s;" % ref
+		else:
+			char = self.unescape("&%s;" % ref)
+		self.handle_data(char)
 
 class Pirate(object):
 	def __init__(self, input_string):
@@ -67,7 +73,7 @@ class Pirate(object):
 		search_string = sub(r">|<|#|&", "", sub(r"^(http(s)?://)?(www.)?" + sub(r"^http(s)?://", "", sub(r".[a-z]*(:[0-9]*)?$", "", tpburl)) + r".[a-z]*(:[0-9]*)?", "", input_string, flags=I))
 		info = self.parse_url(search_string.strip(), force_most_recent, tpburl)
 		if info:
-			link = tpburl + "/" + info[0] + "/" + parse.quote(info[1].decode("UTF-8")) + info[-1]
+			link = tpburl + "/" + info[0] + "/" + parse.quote(info[1]) + info[-1]
 			page = self.get_page(link, agent)
 			try:
 				soup = page.read().decode("UTF-8")
@@ -105,12 +111,12 @@ class Pirate(object):
 			if force_most_recent:
 				pag = 0
 				order = 3
-			return [url[0], bytes(link, "UTF-8"), "/" + str(pag) + "/" + str(order) + "/" + filters + "/"]
+			return [url[0], link, "/" + str(pag) + "/" + str(order) + "/" + filters + "/"]
 		elif url[0] == "recent":
-			return [url[0], bytes("", "UTF-8"), ""]
+			return [url[0], "", ""]
 		elif ( len(url) >= 1 ) and ( not match(r"^http(s)?://", search_string, flags=I) ) and ( not search_string.startswith("/") ):
 			search_string = search_string.replace("/", " ")
-			return ["search", bytes(search_string, "UTF-8"), "/0/3/0/"]
+			return ["search", search_string, "/0/3/0/"]
 		return None
 
 	def get_page(self, link, agent):
@@ -137,14 +143,14 @@ class Pirate(object):
 			return raw_datetime + ":00"
 		elif ":" in raw_datetime:
 			months={"01":"Jan", "02":"Feb", "03":"Mar", "04":"Apr", "05":"May", "06":"Jun", "07":"Jul", "08":"Aug", "09":"Sep", "10":"Oct", "11":"Nov", "12":"Dec"}
-			raw_datetime = raw_datetime.split("\xa0")
+			raw_datetime = raw_datetime.split(" ")
 			raw_datetime = raw_datetime[0].split("-")[1] + " " + months[raw_datetime[0].split("-")[0]] + " " + datetime.utcnow().strftime("%Y") + " " + str(raw_datetime[1])
 			raw_datetime = (datetime.strptime(raw_datetime, "%d %b %Y %H:%M") - timedelta(hours=2)).strftime("%a, %d %b %Y %H:%M")
 			return raw_datetime + ":00"
 		else:
 			weekdays=["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"]
 			months={"01":"Jan", "02":"Feb", "03":"Mar", "04":"Apr", "05":"May", "06":"Jun", "07":"Jul", "08":"Aug", "09":"Sep", "10":"Oct", "11":"Nov", "12":"Dec"}
-			raw_datetime = raw_datetime.split("\xa0")
+			raw_datetime = raw_datetime.split(" ")
 			weekday = datetime.date(datetime.strptime(raw_datetime[1] + "-" + raw_datetime[0].split("-")[0] + "-" + raw_datetime[0].split("-")[1] , "%Y-%m-%d")).weekday()
 			raw_datetime = raw_datetime[0].split("-")[1] + " " + months[raw_datetime[0].split("-")[0]] + " " + str(raw_datetime[1])
 			return weekdays[weekday] + ", " + raw_datetime + " 00:00:00"
@@ -162,7 +168,8 @@ class Pirate(object):
 		link = "/".join(((item[3]).split("/"))[:3])
 		info_hash = (item[9].split(":")[3]).split("&")[0]
 		item_xml = "\n\t\t<item>\n\t\t\t"
-		item_xml += "<title>" + str(item[8]).split("</a>")[0][1:] + "</title>"
+		title = item[8].split("</a>")[0][1:]
+		item_xml += "<title>" + title + "</title>"
 		item_xml += "\n\t\t\t<link><![CDATA[" + item[9] + "]]></link>"
 		uploaded = item[self.find_string(item, "Uploaded")]
 		item_xml += "\n\t\t\t<pubDate>" + self.datetime_parser(" ".join(uploaded.split(",")[0].split(" ")[1:])) + " GMT</pubDate>"
@@ -177,7 +184,7 @@ class Pirate(object):
 		except:
 			pass
 		item_xml += "<br>Category: " + category
-		item_xml += "<br>Size: " + uploaded.split(" ")[3][:-1].replace(" ", " ")
+		item_xml += "<br>Size: " + " ".join(uploaded.split(",")[1].split(" ")[2:])
 		item_xml += "<br>Seeders: " + seeders
 		item_xml += "<br>Leechers: " + leechers
 		item_xml += "]]></description>"
@@ -192,14 +199,12 @@ class Pirate(object):
 	def xml_constructor(self, soup, link, tpburl, info):
 		page_type = info[0]
 		if page_type == "search":
-			title = info[1].decode("UTF-8")
-		elif ( page_type == "browse" ):
+			title = info[1]
+		elif page_type in ["browse", "user"]:
 			try:
 				title = parser.HTMLParser().unescape(search('<title>(.*) - TPB</title>', soup).group(1))
 			except:
-				title = info[1].decode("UTF-8")
-		elif ( page_type == "user" ):
-			title = info[1].decode("UTF-8")
+				title = info[1]
 		elif ( page_type == "recent" ):
 			title = "Recent Torrents"
 		xml = "<rss version=\"2.0\">\n\t" + "<channel>\n\t\t"
