@@ -1,9 +1,8 @@
 # This file is a part of TPB2RSS (https://github.com/camporez/tpb2rss/)
 
-import os
-import sys
+from page    import build
+from sys     import exc_info
 from tpb2rss import ThePirateFeed
-from page import build
 
 def feed_generator(path_info):
 	global error
@@ -11,7 +10,7 @@ def feed_generator(path_info):
 		result = ThePirateFeed(path_info)
 		return result
 	except:
-		error = str(sys.exc_info()[1])
+		error = str(exc_info()[1])
 		return None
 
 def application(environ, start_response):
@@ -22,9 +21,9 @@ def application(environ, start_response):
 	if (( environ["PATH_INFO"] == "") or ( environ["PATH_INFO"] == "/" )):
 		xml = False
 	else:
-		result = feed_generator(environ["PATH_INFO"].encode("iso-8859-1").decode("utf-8"))
+		result = feed_generator(environ["PATH_INFO"].encode("ISO-8859-1").decode("UTF-8"))
 		try:
-			status = "%s %s" % (str(result.status.code), result.code.reason)
+			status = "%s %s" % (str(result.status.code), result.status.reason)
 			xml = result.xml
 		except:
 			status = "404 Not Found"
