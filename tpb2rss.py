@@ -51,9 +51,6 @@ class HTMLParser(parser.HTMLParser):
 		elif self.in_td:
 			self.data[-1] += "</" + tag + ">"
 
-	def handle_charref(self, ref):
-		self.handle_entityref("#" + ref)
-
 	def handle_entityref(self, ref):
 		if ref in ["amp", "apos", "gt", "lt", "quote"]:
 			char = "&%s;" % ref
@@ -62,10 +59,10 @@ class HTMLParser(parser.HTMLParser):
 		self.handle_data(char)
 
 class ThePirateFeed(object):
-	def __init__(self, input_string):
-		self.get_feed(input_string)
+	def __init__(self, input_string, force_most_recent=True, tpburl=__tpburl__, agent=__agent__):
+		self.get_feed(input_string, force_most_recent, tpburl, agent)
 
-	def get_feed(self, input_string, force_most_recent=True, tpburl=__tpburl__, agent=__agent__):
+	def get_feed(self, input_string, force_most_recent, tpburl, agent):
 		try:
 			tpburl = search(r"^http(s)?://[\w|\.]+\.[\w|\.]+(:[0-9]+)?/", input_string).group(0)[:-1]
 		except:
@@ -174,29 +171,29 @@ class ThePirateFeed(object):
 		info_hash = (item[9].split(":")[3]).split("&")[0]
 		item_xml = "\n\t\t<item>\n\t\t\t"
 		title = item[8].split("</a>")[0][1:]
-		item_xml += "<title>" + title + "</title>"
-		item_xml += "\n\t\t\t<link><![CDATA[" + item[9] + "]]></link>"
+		item_xml += "<title>%s</title>" % title
+		item_xml += "\n\t\t\t<link><![CDATA[%s]]></link>" % item[9].replace("&", "&amp;")
 		uploaded = item[self.find_string(item, "Uploaded")]
-		item_xml += "\n\t\t\t<pubDate>" + self.datetime_parser(" ".join(uploaded.split(",")[0].split(" ")[1:])) + " GMT</pubDate>"
+		item_xml += "\n\t\t\t<pubDate>%s GMT</pubDate>" % self.datetime_parser(" ".join(uploaded.split(",")[0].split(" ")[1:]))
 		item_xml += "\n\t\t\t<description><![CDATA["
-		item_xml += "Link: " + tpburl + link + "/"
+		item_xml += "Link: %s%s/" % (tpburl, link)
 		try:
-			item_xml += "<br>Torrent: " + sub(r"^//", "https://", str(item[self.find_string(item, "piratebaytorrents")]))
+			item_xml += "<br>Torrent: %s" % sub(r"^//", "https://", str(item[self.find_string(item, "piratebaytorrents")]))
 		except:
 			pass
 		try:
-			item_xml += "<br>Uploader: " + str(item[self.find_string(item, "Browse ")]).replace("Browse ", "")
+			item_xml += "<br>Uploader: %s" % str(item[self.find_string(item, "Browse ")]).replace("Browse ", "")
 		except:
 			pass
-		item_xml += "<br>Category: " + category
-		item_xml += "<br>Size: " + " ".join(uploaded.split(",")[1].split(" ")[2:])
-		item_xml += "<br>Seeders: " + seeders
-		item_xml += "<br>Leechers: " + leechers
+		item_xml += "<br>Category: %s" % category
+		item_xml += "<br>Size: %s" % " ".join(uploaded.split(",")[1].split(" ")[2:])
+		item_xml += "<br>Seeders: %s" % seeders
+		item_xml += "<br>Leechers: %s" % leechers
 		item_xml += "]]></description>"
-		item_xml += "\n\t\t\t<guid>" + tpburl + link + "/</guid>"
+		item_xml += "\n\t\t\t<guid>%s%s/</guid>" % (tpburl, link)
 		item_xml += "\n\t\t\t<torrent xmlns=\"http://xmlns.ezrss.it/0.1/\">"
-		item_xml += "\n\t\t\t\t<infoHash>" + info_hash + "</infoHash>"
-		item_xml += "\n\t\t\t\t<magnetURI><![CDATA[" + item[9] + "]]></magnetURI>"
+		item_xml += "\n\t\t\t\t<infoHash>%s</infoHash>" % info_hash
+		item_xml += "\n\t\t\t\t<magnetURI><![CDATA[%s]]></magnetURI>" % item[9].replace("&", "&amp;")
 		item_xml += "\n\t\t\t</torrent>"
 		item_xml += "\n\t\t</item>"
 		return item_xml
@@ -215,15 +212,15 @@ class ThePirateFeed(object):
 				title = info[1]
 		elif info[0] == "recent":
 			title = "Recent Torrents"
-		xml = "<rss version=\"2.0\">\n\t" + "<channel>\n\t\t"
-		xml += "<title>TPB2RSS: " + title + "</title>\n\t\t"
-		xml += "<link>" + tpburl + parse.quote(link) + "</link>\n\t\t"
-		xml += "<description>The Pirate Bay " + info[0] + " feed for \"" + title + "\"</description>\n\t\t"
-		xml += "<lastBuildDate>" + str(datetime.utcnow().strftime("%a, %d %b %Y %H:%M:%S")) + " GMT</lastBuildDate>\n\t\t"
+		xml = "<rss version=\"2.0\">\n\t<channel>\n\t\t"
+		xml += "<title>TPB2RSS: %s</title>\n\t\t" % title
+		xml += "<link>%s%s</link>\n\t\t" % (tpburl, parse.quote(link))
+		xml += "<description>The Pirate Bay %s feed for \"%s\"</description>\n\t\t" % (info[0], title)
+		xml += "<lastBuildDate>%s GMT</lastBuildDate>\n\t\t" % datetime.utcnow().strftime("%a, %d %b %Y %H:%M:%S")
 		xml += "<language>en-us</language>\n\t\t"
-		xml += "<generator>TPB2RSS " + __version__ + "</generator>\n\t\t"
-		xml += "<docs>" + __docs__ + "</docs>\n\t\t"
-		xml += "<webMaster>" + __email__ + " (" + __author__ + ")</webMaster>"
+		xml += "<generator>TPB2RSS %s</generator>\n\t\t" % __version__
+		xml += "<docs>%s</docs>\n\t\t" % __docs__
+		xml += "<webMaster>%s (%s)</webMaster>" % (__email__, __author__)
 		position = 0
 		for i in range(int(len(page.data) / 4)):
 			item = str(page.data[position + 1]).split("\"")
@@ -232,13 +229,13 @@ class ThePirateFeed(object):
 			category = sub(r"(\n|\t)", "", (compile(r'<.*?>').sub('', page.data[0]).replace("(", " (")))
 			xml += self.item_constructor(item, seeders, leechers, category, tpburl)
 			position += 4
-		xml += "\n\t</channel>" + "\n</rss>"
+		xml += "\n\t</channel>\n</rss>"
 		return xml
 
 if __name__ == "__main__" and len(argv) > 1:
 	result = ThePirateFeed(" ".join(argv[1:]))
 	if result.xml:
 		print(result.xml)
-	elif result.status:
-		stderr.write("Failed to get feed. HTTP code: %s %s.\n" % (str(result.status.code), result.status.reason))
+	else:
+		stderr.write("Failed to get feed. HTTP status: %i %s.\n" % (result.status.code, result.status.reason))
 		exit(2)

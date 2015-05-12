@@ -23,7 +23,7 @@ def application(environ, start_response):
 	else:
 		result = feed_generator(environ["PATH_INFO"].encode("ISO-8859-1").decode("UTF-8"))
 		try:
-			status = "%s %s" % (str(result.status.code), result.status.reason)
+			status = "%i %s" % (result.status.code, result.status.reason)
 			xml = result.xml
 		except:
 			status = "404 Not Found"
