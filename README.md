@@ -7,13 +7,6 @@ Usage
 -----
 
 ```
-./tpb2rss.py ( TPB_URL | SEARCH_TERM ) [ OUTPUT_FILE ]
-```
-
-Calling from another python program
------------------------------------
-
-```
 from tpb2rss import ThePirateFeed
 
 feed = ThePirateFeed(input_string, force_most_recent, tpburl, agent)
@@ -31,11 +24,11 @@ Input:
 
 Output:
 
-- `feed.xml` (str)
+- `feed.xml`: the requested page formatted as XML following the RSS 2.0 specification (*string* or `None`)
 
-- `feed.status.code` (int)
+- `feed.status.code`: HTTP status code returned by `urllib` (*integer*)
 
-- `feed.status.reason` (str)
+- `feed.status.reason`: description of the HTTP status code (*string*)
 
 Installing on OpenShift
 -----------------------
