@@ -10,7 +10,7 @@ from urllib   import error, parse, request
 # Project info
 __author__  = "Ian Brunelli"
 __email__   = "ian@brunelli.me"
-__version__ = "2.0 beta"
+__version__ = "2.0"
 __docs__    = "https://github.com/camporez/tpb2rss/"
 __license__ = "Apache License 2.0"
 
@@ -82,7 +82,6 @@ class ThePirateFeed(object):
 				self.xml = None
 		else:
 			raise ValueError("The given URL is invalid: " + input_string)
-			exit(1)
 
 	def parse_url(self, search_string, force_most_recent, tpburl):
 		url = list(filter(None, search_string.split("/")))
@@ -237,5 +236,4 @@ if __name__ == "__main__" and len(argv) > 1:
 	if result.xml:
 		print(result.xml)
 	else:
-		stderr.write("Failed to get feed. HTTP status: %i %s.\n" % (result.status.code, result.status.reason))
-		exit(2)
+		raise Exception("Failed to get feed\nHTTP status: %i %s" % (result.status.code, result.status.reason))
