@@ -1,6 +1,16 @@
 TPB2RSS
 =======
 
+----
+
+# Attention
+
+I'm no longer maintaining this repository.
+
+More info [here](https://github.com/camporez/tpb2rss/issues/8#issuecomment-449871729).
+
+----
+
 A python script to generate a RSS feed from a The Pirate Bay search
 
 Usage
